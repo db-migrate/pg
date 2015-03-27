@@ -1,0 +1,32 @@
+{
+  "name": "db-migrate-pg",
+  "version": "0.1.0",
+  "description": "A postgresql driver for db-migrate",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/db-migrate/pg.git"
+  },
+  "keywords": [
+    "db-migrate",
+    "migrate",
+    "migration",
+    "pg",
+    "postgres",
+    "postgresql",
+    "sql",
+    "database",
+    "db",
+    "migrator",
+    "driver"
+  ],
+  "author": "Tobias Gurtzick",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/db-migrate/pg/issues"
+  },
+  "homepage": "https://github.com/db-migrate/pg"
+}
