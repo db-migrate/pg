@@ -10,6 +10,7 @@ var internals = {};
 
 var PgDriver = Base.extend({
     init: function(connection, schema) {
+        this._escapeString = '\'';
         this._super(internals);
         this.connection = connection;
         this.schema = schema || "public";
@@ -164,7 +165,16 @@ var PgDriver = Base.extend({
       }.bind(this))
       .then(function(result) {
 
-          var searchPath;
+          var searchPath,
+              search_pathes = result[0].search_path.split(',');
+
+          for (var i = 0; i < search_pathes.length; ++i) {
+            if (search_pathes[i].indexOf('"') !== 0) {
+              search_pathes[i] = '"' + search_pathes[i] + '"';
+            }
+          }
+
+          result[0].search_path = search_pathes.join(',');
 
           // if the user specified a different schema, prepend it to the
           // search path. This will make all DDL/DML/SQL operate on the specified
@@ -367,7 +377,7 @@ var PgDriver = Base.extend({
       var columns = Object.keys(fieldMapping);
       var referencedColumns = columns.map(function (key) { return '"' + fieldMapping[key] + '"'; });
       var sql = util.format('ALTER TABLE "%s" ADD CONSTRAINT "%s" FOREIGN KEY (%s) REFERENCES "%s" (%s) ON DELETE %s ON UPDATE %s',
-        tableName, keyName, this.quoteArr(columns), referencedTableName, referencedColumns, rules.onDelete || 'NO ACTION', rules.onUpdate || 'NO ACTION');
+        tableName, keyName, this.quoteDDLArr(columns), referencedTableName, referencedColumns, rules.onDelete || 'NO ACTION', rules.onUpdate || 'NO ACTION');
       return this.runSql(sql).nodeify(callback);
     },
 
@@ -432,6 +442,9 @@ var PgDriver = Base.extend({
 
     all: function() {
         params = arguments;
+
+        log.sql.apply(null, params);
+
         return new Promise(function(resolve, reject) {
           var prCB = function(err, data) {
             return (err ? reject(err) : resolve(data));
