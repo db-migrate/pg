@@ -19,9 +19,9 @@ var PgDriver = Base.extend({
 
     startMigration: function(cb){
 
-      if(!internals.notansactions) {
+      if(!internals.notransactions) {
 
-        return Promise.promisify(this.runSql.bind(this))('BEGIN;').nodeify(cb);
+        return this.runSql('BEGIN;').nodeify(cb);
       }
       else
         return Promise.resolve().nodeify(cb);
@@ -31,7 +31,7 @@ var PgDriver = Base.extend({
 
       if(!internals.notransactions) {
 
-        return Promise.promisify(this.runSql.bind(this))('COMMIT;').nodeify(cb);
+        return this.runSql('COMMIT;').nodeify(cb);
       }
       else
         return Promise.resolve(null).nodeify(cb);
@@ -170,7 +170,7 @@ var PgDriver = Base.extend({
 
           for (var i = 0; i < search_pathes.length; ++i) {
             if (search_pathes[i].indexOf('"') !== 0) {
-              search_pathes[i] = '"' + search_pathes[i] + '"';
+              search_pathes[i] = '"' + search_pathes[i].trim() + '"';
             }
           }
 
@@ -189,7 +189,11 @@ var PgDriver = Base.extend({
         }.bind(this))
         .then(function() {
 
-            return this.all("SELECT table_name FROM information_schema.tables WHERE table_name = '" + internals.migrationTable + "'");
+          return this.all("SELECT table_name FROM information_schema.tables WHERE table_name = '" +
+            internals.migrationTable + "'" +
+            ((this.schema) ?
+              " AND table_schema = '" + this.schema + "'" :
+              ''));
         }.bind(this))
         .then(function(result) {
 
@@ -243,7 +247,11 @@ var PgDriver = Base.extend({
         }.bind(this))
         .then(function() {
 
-            return this.all("SELECT table_name FROM information_schema.tables WHERE table_name = '" + internals.seedTable + "'");
+            return this.all("SELECT table_name FROM information_schema.tables WHERE table_name = '" +
+              internals.seedTable + "'" +
+              ((this.schema) ?
+                " AND table_schema = '" + this.schema + "'" :
+                ''));
         }.bind(this))
         .then(function(result) {
 
@@ -386,16 +394,20 @@ var PgDriver = Base.extend({
       return this.runSql(sql).nodeify(callback);
     },
 
-    insert: function(tableName, columnNameArray, valueArray, callback) {
-      columnNameArray = columnNameArray.map(function(columnName) {
-        return (columnName.charAt(0) != '"') ? '"' + columnName + '"' : columnName;
-      });
+    insert: function() {
 
-      valueArray = valueArray.map(function(value) {
+      var index = 1;
+
+      if( arguments.length > 3 ) {
+
+        index = 2;
+      }
+
+      arguments[index] = arguments[index].map(function(value) {
         return 'string' === typeof value ? value : JSON.stringify(value);
       });
 
-      return this._super(tableName, columnNameArray, valueArray, callback);
+      return this._super.apply(this, arguments);
     },
 
     runSql: function() {
