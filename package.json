@@ -28,5 +28,10 @@
   "bugs": {
     "url": "https://github.com/db-migrate/pg/issues"
   },
-  "homepage": "https://github.com/db-migrate/pg"
+  "homepage": "https://github.com/db-migrate/pg",
+  "dependencies": {
+    "bluebird": "^2.9.34",
+    "db-migrate-base": "^1.2.1",
+    "pg": "^4.4.1"
+  }
 }
