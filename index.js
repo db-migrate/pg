@@ -69,7 +69,8 @@ var PgDriver = Base.extend({
       if(typeof(options) === 'function')
         callback = options;
 
-      this.runSql(util.format('CREATE DATABASE `%s` %s', dbName, spec), callback);
+      this.runSql(util.format('CREATE DATABASE %s %s', this.escapeDDL(dbName),
+        spec), callback);
     },
 
     dropDatabase: function(dbName, options, callback) {
@@ -83,7 +84,8 @@ var PgDriver = Base.extend({
         ifExists = (options.ifExists === true) ? 'IF EXISTS' : '';
       }
 
-      this.runSql(util.format('DROP DATABASE %s `%s`', ifExists, dbName), callback);
+      this.runSql(util.format('DROP DATABASE %s %s', this.escapeDDL(ifExists),
+        dbName), callback);
     },
 
     createSequence: function(sqName, options, callback) {
@@ -472,7 +474,10 @@ var PgDriver = Base.extend({
 
     close: function(callback) {
         this.connection.end();
-        return Promise.resolve().nodeify(callback);
+        if( typeof(callback) === 'function' )
+          return Promise.resolve().nodeify(callback);
+        else
+          return Promise.resolve();
     }
 
 });
