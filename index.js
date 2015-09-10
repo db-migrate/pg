@@ -9,9 +9,10 @@ var Promise = require('bluebird');
 var internals = {};
 
 var PgDriver = Base.extend({
-    init: function(connection, schema) {
+    init: function(connection, schema, intern) {
         this._escapeString = '\'';
-        this._super(internals);
+        this._super(intern);
+        this.internals = intern;
         this.connection = connection;
         this.schema = schema || "public";
         this.connection.connect();
@@ -19,7 +20,7 @@ var PgDriver = Base.extend({
 
     startMigration: function(cb){
 
-      if(!internals.notransactions) {
+      if(!this.internals.notransactions) {
 
         return this.runSql('BEGIN;').nodeify(cb);
       }
@@ -29,7 +30,7 @@ var PgDriver = Base.extend({
 
     endMigration: function(cb){
 
-      if(!internals.notransactions) {
+      if(!this.internals.notransactions) {
 
         return this.runSql('COMMIT;').nodeify(cb);
       }
@@ -190,7 +191,7 @@ var PgDriver = Base.extend({
         .then(function() {
 
           return this.all("SELECT table_name FROM information_schema.tables WHERE table_name = '" +
-            internals.migrationTable + "'" +
+            this.internals.migrationTable + "'" +
             ((this.schema) ?
               " AND table_schema = '" + this.schema + "'" :
               ''));
@@ -198,7 +199,7 @@ var PgDriver = Base.extend({
         .then(function(result) {
 
           if (result && result && result.length < 1) {
-            return this.createTable(internals.migrationTable, options);
+            return this.createTable(this.internals.migrationTable, options);
           } else {
             return Promise.resolve();
           }
@@ -248,7 +249,7 @@ var PgDriver = Base.extend({
         .then(function() {
 
             return this.all("SELECT table_name FROM information_schema.tables WHERE table_name = '" +
-              internals.seedTable + "'" +
+              this.internals.seedTable + "'" +
               ((this.schema) ?
                 " AND table_schema = '" + this.schema + "'" :
                 ''));
@@ -256,7 +257,7 @@ var PgDriver = Base.extend({
         .then(function(result) {
 
           if (result && result && result.length < 1) {
-            return this.createTable(internals.seedTable, options);
+            return this.createTable(this.internals.seedTable, options);
           } else {
             return Promise.resolve();
           }
@@ -434,7 +435,7 @@ var PgDriver = Base.extend({
         }
 
         log.sql.apply(null, params);
-        if(internals.dryRun) {
+        if(this.internals.dryRun) {
           return Promise.resolve().nodeify(callback);
         }
 
@@ -482,10 +483,10 @@ exports.connect = function(config, intern, callback) {
 
     internals = intern;
 
-    log = internals.mod.log;
-    type = internals.mod.type;
+    log = intern.mod.log;
+    type = intern.mod.type;
 
     if (config.native) { pg = pg.native; }
     var db = config.db || new pg.Client(config);
-    callback(null, new PgDriver(db, config.schema));
+    callback(null, new PgDriver(db, config.schema, intern));
 };
