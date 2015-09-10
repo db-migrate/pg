@@ -1,7 +1,7 @@
 var util = require('util');
 var pg = require('pg');
 var semver = require('semver');
-var Base = require('./base');
+var Base = require('db-migrate-base');
 var type;
 var log;
 var Promise = require('bluebird');
