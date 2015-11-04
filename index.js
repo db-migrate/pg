@@ -466,7 +466,7 @@ var PgDriver = Base.extend({
           };
 
           this.connection.query.apply(this.connection, [params[0], function(err, result){
-            prCB(err, result.rows);
+            prCB(err, (result) ? result.rows : result);
           }]);
 
         }.bind(this)).nodeify(params[1]);
