@@ -84,8 +84,7 @@ var PgDriver = Base.extend({
         ifExists = (options.ifExists === true) ? 'IF EXISTS' : '';
       }
 
-      this.runSql(util.format('DROP DATABASE %s %s', this.escapeDDL(ifExists),
-        dbName), callback);
+      this.runSql(util.format('DROP DATABASE %s %s', ifExists, this.escapeDDL(dbName)), callback);
     },
 
     createSequence: function(sqName, options, callback) {
