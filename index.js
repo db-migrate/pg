@@ -284,7 +284,7 @@ var PgDriver = Base.extend({
             constraint.push('UNIQUE');
         }
 
-        if (typeof spec.defaultValue != 'undefined') {
+        if (spec.defaultValue !== undefined) {
             constraint.push('DEFAULT');
             if (typeof spec.defaultValue == 'string'){
                 constraint.push("'" + spec.defaultValue + "'");
