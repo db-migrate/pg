@@ -269,10 +269,26 @@ var PgDriver = Base.extend({
         var constraint = [],
             cb;
 
+        if ((spec.unique || spec.primaryKey) && spec.autoIncrement) {
+          switch (spec.dataType) {
+                case type.BIGINT:
+                    constraint.push('BIGSERIAL');                    
+                    break;
+                case type.SMALLINT:
+                    constraint.push('SMALLSERIAL');
+                    break;
+                default:
+                    constraint.push('SERIAL');
+                    break;
+            }          
+        }
+        else {
+          if (spec.autoIncrement) {
+            throw 'Auto increment column must be unique or primary key';
+          }
+        }
+
         if (spec.primaryKey && options.emitPrimaryKey) {
-            if (spec.autoIncrement) {
-                constraint.push('SERIAL');
-            }
             constraint.push('PRIMARY KEY');
         }
 

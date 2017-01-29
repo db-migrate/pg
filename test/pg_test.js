@@ -35,6 +35,102 @@ vows.describe('pg').addBatch({
     }
   }
 }).addBatch({
+  'autoIncrement': {
+    'withPrimaryKey' : {
+      topic: function() {
+        db.createTable('pkautocheck', {          
+          pkAuto: {primaryKey: true, autoIncrement: true }
+        }, this.callback.bind(this));
+      },
+
+      shouldNotFail: function(topic) {
+        
+      },
+
+      'with columns' : {
+        topic: function () {
+          dbmeta('pg', { connection:db.connection}, function (err, meta) {
+            if (err) {
+              return this.callback(err);
+            }
+            meta.getColumns('pkautocheck', this.callback);
+          }.bind(this));
+        },
+
+        'that has primary key integer auto increment': function (err, columns) {
+          var column = findByName(columns, 'pkAuto');
+          assert.equal(column.getDataType(), 'INTEGER');
+          assert.equal(column.isPrimaryKey(), true);
+          assert.equal(column.isAutoIncrementing(), true);
+        }
+      },      
+
+      teardown: function() {
+        db.dropTable('pkautocheck', this.callback);
+      }
+    },
+
+    'withUnique' : {
+      topic: function() {
+        db.createTable('uniqueautocheck', {          
+          uniqueAuto: { dataType: dataType.SMALLINT, unique: true, autoIncrement: true },
+          uniqueAutoBig: { dataType: dataType.BIGINT, unique: true, autoIncrement: true },
+        }, this.callback.bind(this));
+      },
+
+      shouldNotFail: function(topic) {
+        
+      },
+
+      'with columns' : {
+        topic: function () {
+          dbmeta('pg', { connection:db.connection}, function (err, meta) {
+            if (err) {
+              return this.callback(err);
+            }
+            meta.getColumns('uniqueautocheck', this.callback);
+          }.bind(this));
+        },
+
+        'that has unique small integer auto increment': function (err, columns) {
+          if (err) {
+            return this.callback(err);
+          }
+          var column = findByName(columns, 'uniqueAuto');
+          assert.equal(column.getDataType(), 'SMALLINT');
+          assert.equal(column.isUnique(), true);
+          assert.equal(column.isAutoIncrementing(), true);
+        },
+
+        'that has unique big integer auto increment': function (err, columns) {
+          if (err) {
+            return this.callback(err);
+          }
+          var column = findByName(columns, 'uniqueAutoBig');
+          assert.equal(column.getDataType(), 'BIGINT');
+          assert.equal(column.isUnique(), true);
+          assert.equal(column.isAutoIncrementing(), true);
+        }
+      },
+
+      teardown: function() {
+        db.dropTable('uniqueautocheck', this.callback);
+      }
+    },
+
+    'withoutUniqueOrPrimaryKey': {
+      topic: function () {
+        db.createTable('uniqueautocheck', {          
+          uniqueAuto: { dataType: dataType.SMALLINT, autoIncrement: true }
+        }, this.callback.bind(this));
+      },
+
+      shouldFail: function(err, topic) {
+        assert.isNotNull(err);
+        assert.equal('Auto increment column must be unique or primary key', err)
+      }
+    }    
+  },
   'createTable': {
     topic: function() {
       db.createTable('event', {
@@ -62,8 +158,12 @@ vows.describe('pg').addBatch({
       },
 
       'containing the event table': function(err, tables) {
-        assert.equal(tables.length, 1);
-        assert.equal(tables[0].getName(), 'event');
+        assert.notEqual(tables.length, 0)
+        var table = tables.find(function (v) {
+          return v.getName() === 'event';
+        });
+
+        assert.isNotNull(table);
       }
     },
 
