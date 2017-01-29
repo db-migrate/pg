@@ -5,3 +5,9 @@
 
 # pg
 postgres driver for db-migrate
+
+## Installation
+
+```
+npm install db-migrate-pg
+```
