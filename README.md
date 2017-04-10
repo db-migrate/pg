@@ -9,5 +9,5 @@ postgres driver for db-migrate
 ## Installation
 
 ```
-npm install db-migrate-pg
+npm install --save db-migrate-pg
 ```
