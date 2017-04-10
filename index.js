@@ -54,6 +54,7 @@ var PgDriver = Base.extend({
         }
 
         return { foreignKey: constraint.foreignKey,
+                 callbacks: constraint.callbacks,
                  constraints: [name, type, len, constraint.constraints].join(' ') };
     },
 
@@ -277,6 +278,7 @@ var PgDriver = Base.extend({
 
     createColumnConstraint: function(spec, options, tableName, columnName) {
         var constraint = [],
+            callbacks = [],
             cb;
 
         if (spec.primaryKey && options.emitPrimaryKey) {
@@ -307,12 +309,20 @@ var PgDriver = Base.extend({
             }
         }
 
+        // keep foreignKey for backward compatiable, push to callbacks in the future
         if (spec.foreignKey) {
 
           cb = this.bindForeignKey(tableName, columnName, spec.foreignKey);
         }
+        if (spec.comment) {
+          // TODO: create a new function addComment is not callable from here
+          callbacks.push((function(tableName, columnName, comment, callback) {
+            var sql = util.format("COMMENT on COLUMN %s.%s IS '%s'", tableName, columnName, comment)
+            return this.runSql(sql).nodeify(callback)
+          }).bind(this, tableName, columnName, spec.comment))
+        }
 
-        return { foreignKey: cb, constraints: constraint.join(' ') };
+        return { foreignKey: cb, callbacks: callbacks, constraints: constraint.join(' ') };
     },
 
     renameTable: function(tableName, newTableName, callback) {
