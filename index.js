@@ -40,6 +40,12 @@ var PgDriver = Base.extend({
     },
 
     createColumnDef: function(name, spec, options, tableName) {
+        // add support for datatype timetz, timestamptz
+        // https://www.postgresql.org/docs/9.5/static/datatype.html
+        spec.type = spec.type.replace(/^(time|timestamp)tz$/, function($, type) {
+            spec.timezone = true
+            return type
+        })
         var type = spec.autoIncrement ? '' : this.mapDataType(spec.type);
         var len = spec.length ? util.format('(%s)', spec.length) : '';
         var constraint = this.createColumnConstraint(spec, options, tableName, name);
@@ -53,6 +59,9 @@ var PgDriver = Base.extend({
 
     mapDataType: function(str) {
         switch(str) {
+          case 'json':
+          case 'jsonb':
+            return str.toUpperCase()
           case this.type.STRING:
             return 'VARCHAR';
           case this.type.DATE_TIME:
@@ -283,6 +292,10 @@ var PgDriver = Base.extend({
 
         if (spec.unique) {
             constraint.push('UNIQUE');
+        }
+
+        if (spec.timezone) {
+            constraint.push('WITH TIME ZONE')
         }
 
         if (spec.defaultValue !== undefined) {
