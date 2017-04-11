@@ -47,6 +47,7 @@ vows.describe('pg').addBatch({
         smalint: dataType.SMALLINT,
         dt: dataType.DATE,
         dti: dataType.DATE_TIME,
+        dti_tz: { type: dataType.DATE_TIME, timezone: true },
         bl: dataType.BOOLEAN
       }, this.callback.bind(this));
     },
@@ -77,9 +78,9 @@ vows.describe('pg').addBatch({
         }.bind(this));
       },
 
-      'with 10 columns': function(err, columns) {
+      'with 11 columns': function(err, columns) {
         assert.isNotNull(columns);
-        assert.equal(columns.length, 10);
+        assert.equal(columns.length, 11);
       },
 
       'that has integer id column that is primary key, non-nullable, and auto increments': function(err, columns) {
@@ -124,6 +125,12 @@ vows.describe('pg').addBatch({
       'that has integer dti column': function(err, columns) {
         var column = findByName(columns, 'dti');
         assert.equal(column.getDataType(), 'TIMESTAMP WITHOUT TIME ZONE');
+        assert.equal(column.isNullable(), true);
+      },
+
+      'that has timestamp with time zone column': function(err, columns) {
+        var column = findByName(columns, 'dti_tz');
+        assert.equal(column.getDataType(), 'TIMESTAMP WITH TIME ZONE');
         assert.equal(column.isNullable(), true);
       },
 

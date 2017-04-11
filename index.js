@@ -39,6 +39,12 @@ var PgDriver = Base.extend({
     },
 
     createColumnDef: function(name, spec, options, tableName) {
+        // add support for datatype timetz, timestamptz
+        // https://www.postgresql.org/docs/9.5/static/datatype.html
+        spec.type = spec.type.replace(/^(time|timestamp)tz$/, function($, type) {
+            spec.timezone = true
+            return type
+        })
         var type = spec.autoIncrement ? '' : this.mapDataType(spec.type);
         var len = spec.length ? util.format('(%s)', spec.length) : '';
         var constraint = this.createColumnConstraint(spec, options, tableName, name);
@@ -47,11 +53,15 @@ var PgDriver = Base.extend({
         }
 
         return { foreignKey: constraint.foreignKey,
+                 callbacks: constraint.callbacks,
                  constraints: [name, type, len, constraint.constraints].join(' ') };
     },
 
     mapDataType: function(str) {
         switch(str) {
+          case 'json':
+          case 'jsonb':
+            return str.toUpperCase()
           case type.STRING:
             return 'VARCHAR';
           case type.DATE_TIME:
@@ -267,6 +277,7 @@ var PgDriver = Base.extend({
 
     createColumnConstraint: function(spec, options, tableName, columnName) {
         var constraint = [],
+            callbacks = [],
             cb;
 
         if (spec.primaryKey && options.emitPrimaryKey) {
@@ -284,6 +295,10 @@ var PgDriver = Base.extend({
             constraint.push('UNIQUE');
         }
 
+        if (spec.timezone) {
+            constraint.push('WITH TIME ZONE')
+        }
+
         if (spec.defaultValue !== undefined) {
             constraint.push('DEFAULT');
             if (typeof spec.defaultValue == 'string'){
@@ -293,12 +308,20 @@ var PgDriver = Base.extend({
             }
         }
 
+        // keep foreignKey for backward compatiable, push to callbacks in the future
         if (spec.foreignKey) {
 
           cb = this.bindForeignKey(tableName, columnName, spec.foreignKey);
         }
+        if (spec.comment) {
+          // TODO: create a new function addComment is not callable from here
+          callbacks.push((function(tableName, columnName, comment, callback) {
+            var sql = util.format("COMMENT on COLUMN %s.%s IS '%s'", tableName, columnName, comment)
+            return this.runSql(sql).nodeify(callback)
+          }).bind(this, tableName, columnName, spec.comment))
+        }
 
-        return { foreignKey: cb, constraints: constraint.join(' ') };
+        return { foreignKey: cb, callbacks: callbacks, constraints: constraint.join(' ') };
     },
 
     renameTable: function(tableName, newTableName, callback) {
