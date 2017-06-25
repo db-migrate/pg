@@ -2,14 +2,15 @@ var util = require('util');
 var pg = require('pg');
 var semver = require('semver');
 var Base = require('db-migrate-base');
-var type;
-var log;
 var Promise = require('bluebird');
 
 var internals = {};
 
 var PgDriver = Base.extend({
     init: function(connection, schema, intern) {
+
+        this.log = intern.mod.log;
+        this.type = intern.mod.type;
         this._escapeString = '\'';
         this._super(intern);
         this.internals = intern;
@@ -52,11 +53,11 @@ var PgDriver = Base.extend({
 
     mapDataType: function(str) {
         switch(str) {
-          case type.STRING:
+          case this.type.STRING:
             return 'VARCHAR';
-          case type.DATE_TIME:
+          case this.type.DATE_TIME:
             return 'TIMESTAMP';
-          case type.BLOB:
+          case this.type.BLOB:
             return 'BYTEA';
         }
         return this._super(str);
@@ -108,7 +109,7 @@ var PgDriver = Base.extend({
       {
         if(typeof(options.database) === 'string')
         {
-          log.info('Ignore database option, not available with postgres. Use schema instead!');
+          this.log.info('Ignore database option, not available with postgres. Use schema instead!');
           this.runSql(util.format('SET search_path TO `%s`', options.database), callback);
         }
       }
@@ -143,9 +144,9 @@ var PgDriver = Base.extend({
     createMigrationsTable: function(callback) {
       var options = {
         columns: {
-          'id': { type: type.INTEGER, notNull: true, primaryKey: true, autoIncrement: true },
-          'name': { type: type.STRING, length: 255, notNull: true},
-          'run_on': { type: type.DATE_TIME, notNull: true}
+          'id': { type: this.type.INTEGER, notNull: true, primaryKey: true, autoIncrement: true },
+          'name': { type: this.type.STRING, length: 255, notNull: true},
+          'run_on': { type: this.type.DATE_TIME, notNull: true}
         },
         ifNotExists: false
       };
@@ -210,9 +211,9 @@ var PgDriver = Base.extend({
     createSeedsTable: function(callback) {
       var options = {
         columns: {
-          'id': { type: type.INTEGER, notNull: true, primaryKey: true, autoIncrement: true },
-          'name': { type: type.STRING, length: 255, notNull: true},
-          'run_on': { type: type.DATE_TIME, notNull: true}
+          'id': { type: this.type.INTEGER, notNull: true, primaryKey: true, autoIncrement: true },
+          'name': { type: this.type.STRING, length: 255, notNull: true},
+          'run_on': { type: this.type.DATE_TIME, notNull: true}
         },
         ifNotExists: false
       };
@@ -435,7 +436,7 @@ var PgDriver = Base.extend({
             params[0] = new_param.join('');
         }
 
-        log.sql.apply(null, params);
+        this.log.sql.apply(null, params);
         if(this.internals.dryRun) {
           return Promise.resolve().nodeify(callback);
         }
@@ -457,7 +458,7 @@ var PgDriver = Base.extend({
     all: function() {
         params = arguments;
 
-        log.sql.apply(null, params);
+        this.log.sql.apply(null, params);
 
         return new Promise(function(resolve, reject) {
           var prCB = function(err, data) {
@@ -486,9 +487,6 @@ Promise.promisifyAll(PgDriver);
 exports.connect = function(config, intern, callback) {
 
     internals = intern;
-
-    log = intern.mod.log;
-    type = intern.mod.type;
 
     if (config.native) { pg = pg.native; }
     var db = config.db || new pg.Client(config);
