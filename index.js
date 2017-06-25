@@ -494,3 +494,5 @@ exports.connect = function(config, intern, callback) {
     var db = config.db || new pg.Client(config);
     callback(null, new PgDriver(db, config.schema, intern));
 };
+
+exports.base = PgDriver;
