@@ -46,7 +46,8 @@ var PgDriver = Base.extend({
             spec.timezone = true
             return type
         })
-        var type = spec.autoIncrement ? '' : this.mapDataType(spec.type);
+        var type = (spec.primaryKey && spec.autoIncrement) ? '' :
+          this.mapDataType(spec.type);
         var len = spec.length ? util.format('(%s)', spec.length) : '';
         var constraint = this.createColumnConstraint(spec, options, tableName, name);
         if (name.charAt(0) != '"') {
@@ -281,11 +282,14 @@ var PgDriver = Base.extend({
             callbacks = [],
             cb;
 
-        if (spec.primaryKey && options.emitPrimaryKey) {
+        if (spec.primaryKey) {
             if (spec.autoIncrement) {
                 constraint.push('SERIAL');
             }
-            constraint.push('PRIMARY KEY');
+
+            if (options.emitPrimaryKey) {
+              constraint.push('PRIMARY KEY');
+            }
         }
 
         if (spec.notNull === true) {
