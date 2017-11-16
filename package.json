@@ -32,7 +32,7 @@
   "dependencies": {
     "bluebird": "^3.1.1",
     "db-migrate-base": "^1.5.2",
-    "pg": "^4.5.7",
+    "pg": "^7.0.0",
     "semver": "^5.0.3"
   },
   "devDependencies": {
