@@ -400,8 +400,9 @@ var PgDriver = Base.extend({
       function setType() {
         if (columnSpec.type !== undefined){
           var using = columnSpec.using !== undefined ?
-            columnSpec.using : util.format('USING "%s"::%s', columnName, this.mapDataType(columnSpec.type))
-          var sql = util.format('ALTER TABLE "%s" ALTER COLUMN "%s" TYPE %s %s', tableName, columnName, this.mapDataType(columnSpec.type), using);
+            columnSpec.using : util.format('USING "%s"::%s', columnName, this.mapDataType(columnSpec.type));
+          var len = columnSpec.length ? util.format('(%s)', columnSpec.length) : '';
+          var sql = util.format('ALTER TABLE "%s" ALTER COLUMN "%s" TYPE %s %s %s', tableName, columnName, this.mapDataType(columnSpec.type), len, using);
           return this.runSql(sql);
         }
       }
