@@ -161,15 +161,15 @@ var PgDriver = Base.extend({
         ifNotExists: false
       };
 
-      return this.all('select version() as version')
+      return this.all('show server_version')
       .then(function(result) {
 
-        if (result && result && result.length > 0 && result[0].version) {
-          var version = result[0].version;
-          var match = version.match(/\d+\.\d+\.\d+/);
-          if (match && match[0] && semver.gte(match[0], '9.1.0')) {
-            options.ifNotExists = true;
+        if (result && result && result.length > 0 && result[0].server_version) {
+          var version = result[0].server_version;
+          if(version.split('.').length !== 3){
+            version += '.0';
           }
+          options.ifNotExists = semver.gte(version, '9.1.0');
         }
 
         // Get the current search path so we can change the current schema
