@@ -1,3 +1,19 @@
+<a name="0.3.0"></a>
+# [0.3.0](https://github.com/db-migrate/pg/compare/v0.2.5...v0.3.0) (2018-01-27)
+
+
+### Bug Fixes
+
+* 10.1 version ([c4a8de4](https://github.com/db-migrate/pg/commit/c4a8de4))
+* unhandled error event on connection ([c19d201](https://github.com/db-migrate/pg/commit/c19d201))
+
+
+### Features
+
+* Connect to postgres db on empty database configuration ([e98f32e](https://github.com/db-migrate/pg/commit/e98f32e))
+
+
+
 <a name="0.2.5"></a>
 ## [0.2.5](https://github.com/db-migrate/pg/compare/v0.2.4...v0.2.5) (2017-08-14)
 
