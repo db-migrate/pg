@@ -22,6 +22,17 @@ log.silence(true);
 
 
 vows.describe('pg').addBatch({
+  'default connection': {
+
+    topic: function() {
+      driver.connect({}, internals, this.callback)
+    },
+
+    'is connected': function(err, _db) {
+      assert.isNull(err);
+    }
+  }
+}).addBatch({
   'connect': {
 
     topic: function() {
