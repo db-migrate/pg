@@ -516,6 +516,7 @@ exports.connect = function(config, intern, callback) {
     internals = intern;
 
     if (config.native) { pg = pg.native; }
+    if(!config.database) { config.database = 'postgres'; }
     var db = config.db || new pg.Client(config);
     callback(null, new PgDriver(db, config.schema, intern));
 };
