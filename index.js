@@ -16,7 +16,6 @@ var PgDriver = Base.extend({
         this.internals = intern;
         this.connection = connection;
         this.schema = schema || "public";
-        this.connection.connect();
     },
 
     startMigration: function(cb){
@@ -518,7 +517,12 @@ exports.connect = function(config, intern, callback) {
     if (config.native) { pg = pg.native; }
     if(!config.database) { config.database = 'postgres'; }
     var db = config.db || new pg.Client(config);
-    callback(null, new PgDriver(db, config.schema, intern));
+    db.connect(function(err) {
+      if(err) {
+        callback(err);
+      }
+      callback(null, new PgDriver(db, config.schema, intern));
+    });
 };
 
 exports.base = PgDriver;

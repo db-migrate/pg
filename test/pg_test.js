@@ -46,6 +46,16 @@ vows.describe('pg').addBatch({
     }
   }
 }).addBatch({
+  'connect error': {
+    topic: function () {
+      driver.connect({host: 'fakehost'}, internals, this.callback);
+    },
+
+    'shows connection error': function (err, _db) {
+      assert.isNotNull(err);
+    }
+  }
+}).addBatch({
   'createTable': {
     topic: function() {
       db.createTable('event', {
