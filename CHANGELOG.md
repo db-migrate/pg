@@ -1,3 +1,14 @@
+<a name="0.3.1"></a>
+## [0.3.1](https://github.com/db-migrate/pg/compare/v0.3.0...v0.3.1) (2018-02-11)
+
+
+### Bug Fixes
+
+* **timezone:** with timezone being emitted to late ([2d3f10d](https://github.com/db-migrate/pg/commit/2d3f10d))
+* **vuln:** update vulnerable dependency ([c409048](https://github.com/db-migrate/pg/commit/c409048))
+
+
+
 <a name="0.3.0"></a>
 # [0.3.0](https://github.com/db-migrate/pg/compare/v0.2.5...v0.3.0) (2018-01-27)
 
