@@ -169,7 +169,7 @@ var PgDriver = Base.extend({
             result.length > 0 &&
             result[0].server_version
           ) {
-            var version = result[0].server_version;
+            var version = result[0].server_version.match(/^([^\s]+)/)[1];
             if (version.split('.').length !== 3) {
               version += '.0';
             }
