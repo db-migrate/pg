@@ -1,3 +1,14 @@
+<a name="0.4.0"></a>
+# [0.4.0](https://github.com/db-migrate/pg/compare/v0.3.1...v0.4.0) (2018-04-02)
+
+
+### Bug Fixes
+
+* **version:** fallback to string based check ([8b6b958](https://github.com/db-migrate/pg/commit/8b6b958)), closes [#32](https://github.com/db-migrate/pg/issues/32)
+* **version:** use server_version_num instead of server_version ([ba07af7](https://github.com/db-migrate/pg/commit/ba07af7))
+
+
+
 <a name="0.3.1"></a>
 ## [0.3.1](https://github.com/db-migrate/pg/compare/v0.3.0...v0.3.1) (2018-02-11)
 
