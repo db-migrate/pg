@@ -208,6 +208,27 @@ var PgDriver = Base.extend({
           )
         }.bind(this)
       )
+      .catch(
+        // not all DBs support server_version, fall back to version()
+        function () {
+          return this.all('select version()')
+          .then(
+            function (result) {
+              if (
+                result &&
+                result.length > 0 &&
+                result[0].version
+              ) {
+                var version = result[0].version;
+                var match = version.match(/\d+\.\d+\.\d+/);
+                if (match && match[0] && semver.gte(match[0], '9.1.0')) {
+                  options.ifNotExists = true;
+                }
+              }
+            }.bind(this)
+          )
+        }
+      )
       .then(
         function (result) {
           var searchPath;
