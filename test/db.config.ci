@@ -7,7 +7,7 @@
   "pg": {
     "driver": "pg",
     "database": "db_migrate_test",
-    "username": "postgres"
+    "user": "postgres"
   },
   "sqlite3": {
     "driver": "sqlite3",
