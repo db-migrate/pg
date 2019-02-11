@@ -7,6 +7,7 @@ var driver = require('../');
 var log = require('db-migrate-shared').log;
 
 var config = require('./db.config.json').pg;
+var db;
 
 var internals = {};
 internals.mod = {
@@ -24,30 +25,22 @@ vows
   .describe('pg')
   .addBatch({
     'default connection': {
-      topic: function() {
-        driver.connect(
-          {},
-          internals,
-          this.callback
-        );
+      topic: function () {
+        driver.connect({}, internals, this.callback);
       },
 
-      'is connected': function(err, _db) {
+      'is connected': function (err, _db) {
         assert.isNull(err);
       }
     }
   })
   .addBatch({
     connect: {
-      topic: function() {
-        driver.connect(
-          config,
-          internals,
-          this.callback
-        );
+      topic: function () {
+        driver.connect(config, internals, this.callback);
       },
 
-      'is connected': function(err, _db) {
+      'is connected': function (err, _db) {
         assert.isNull(err);
         db = _db;
       }
@@ -55,22 +48,18 @@ vows
   })
   .addBatch({
     'connect error': {
-      topic: function() {
-        driver.connect(
-          { host: 'fakehost' },
-          internals,
-          this.callback
-        );
+      topic: function () {
+        driver.connect({ host: 'fakehost' }, internals, this.callback);
       },
 
-      'shows connection error': function(err, _db) {
+      'shows connection error': function (err, _db) {
         assert.isNotNull(err);
       }
     }
   })
   .addBatch({
     createTable: {
-      topic: function() {
+      topic: function () {
         db.createTable(
           'event',
           {
@@ -107,11 +96,11 @@ vows
       },
 
       'has table metadata': {
-        topic: function() {
+        topic: function () {
           dbmeta(
             'pg',
             { connection: db.connection },
-            function(err, meta) {
+            function (err, meta) {
               if (err) {
                 return this.callback(err);
               }
@@ -120,18 +109,18 @@ vows
           );
         },
 
-        'containing the event table': function(err, tables) {
+        'containing the event table': function (err, tables) {
           assert.equal(tables.length, 1);
           assert.equal(tables[0].getName(), 'event');
         }
       },
 
       'has column metadata for the event table': {
-        topic: function() {
+        topic: function () {
           dbmeta(
             'pg',
             { connection: db.connection },
-            function(err, meta) {
+            function (err, meta) {
               if (err) {
                 return this.callback(err);
               }
@@ -140,12 +129,12 @@ vows
           );
         },
 
-        'with 13 columns': function(err, columns) {
+        'with 13 columns': function (err, columns) {
           assert.isNotNull(columns);
           assert.equal(columns.length, 13);
         },
 
-        'that has integer id column that is primary key, non-nullable, and auto increments': function(
+        'that has integer id column that is primary key, non-nullable, and auto increments': function (
           err,
           columns
         ) {
@@ -156,13 +145,13 @@ vows
           assert.equal(column.isAutoIncrementing(), true);
         },
 
-        'that has text str column that is unique': function(err, columns) {
+        'that has text str column that is unique': function (err, columns) {
           var column = findByName(columns, 'str');
           assert.equal(column.getDataType(), 'CHARACTER VARYING');
           assert.equal(column.isUnique(), true);
         },
 
-        'that has text txt column that is non-nullable': function(
+        'that has text txt column that is non-nullable': function (
           err,
           columns
         ) {
@@ -172,73 +161,73 @@ vows
           // assert.equal(column.getDefaultValue(), 'foo');
         },
 
-        'that has integer intg column': function(err, columns) {
+        'that has integer intg column': function (err, columns) {
           var column = findByName(columns, 'intg');
           assert.equal(column.getDataType(), 'INTEGER');
           assert.equal(column.isNullable(), true);
         },
 
-        'that has real rel column': function(err, columns) {
+        'that has real rel column': function (err, columns) {
           var column = findByName(columns, 'rel');
           assert.equal(column.getDataType(), 'REAL');
           assert.equal(column.isNullable(), true);
         },
 
-        'that has integer dt column': function(err, columns) {
+        'that has integer dt column': function (err, columns) {
           var column = findByName(columns, 'dt');
           assert.equal(column.getDataType(), 'DATE');
           assert.equal(column.isNullable(), true);
         },
 
-        'that has integer dti column': function(err, columns) {
+        'that has integer dti column': function (err, columns) {
           var column = findByName(columns, 'dti');
           assert.equal(column.getDataType(), 'TIMESTAMP WITHOUT TIME ZONE');
           assert.equal(column.isNullable(), true);
         },
 
-        'that has timestamp with time zone column': function(err, columns) {
+        'that has timestamp with time zone column': function (err, columns) {
           var column = findByName(columns, 'dti_tz');
           assert.equal(column.getDataType(), 'TIMESTAMP WITH TIME ZONE');
           assert.equal(column.isNullable(), true);
         },
 
-        'that has boolean bl column': function(err, columns) {
+        'that has boolean bl column': function (err, columns) {
           var column = findByName(columns, 'bl');
           assert.equal(column.getDataType(), 'BOOLEAN');
           assert.equal(column.isNullable(), true);
         },
 
-        'that has character chr column': function(err, columns) {
+        'that has character chr column': function (err, columns) {
           var column = findByName(columns, 'chr');
           assert.equal(column.getDataType(), 'CHARACTER');
           assert.equal(column.isNullable(), true);
         },
 
-        'that has small integer smalint column': function(err, columns) {
+        'that has small integer smalint column': function (err, columns) {
           var column = findByName(columns, 'smalint');
           assert.equal(column.getDataType(), 'SMALLINT');
           assert.equal(column.isNullable(), true);
         },
 
-        'that has raw column': function(err, columns) {
+        'that has raw column': function (err, columns) {
           var column = findByName(columns, 'raw');
           assert.equal(column.getDefaultValue(), 'now()');
         },
 
-        'that has special CURRENT_TIMESTAMP column': function(err, columns) {
+        'that has special CURRENT_TIMESTAMP column': function (err, columns) {
           var column = findByName(columns, 'special');
           assert.equal(column.getDefaultValue(), 'now()');
         }
       },
 
-      teardown: function() {
+      teardown: function () {
         db.dropTable('event', this.callback);
       }
     }
   })
   .addBatch({
     dropTable: {
-      topic: function() {
+      topic: function () {
         db.createTable(
           'event',
           {
@@ -248,7 +237,7 @@ vows
               autoIncrement: true
             }
           },
-          function(err) {
+          function (err) {
             if (err) {
               return this.callback(err);
             }
@@ -258,11 +247,11 @@ vows
       },
 
       'has table metadata': {
-        topic: function() {
+        topic: function () {
           dbmeta(
             'pg',
             { connection: db.connection },
-            function(err, meta) {
+            function (err, meta) {
               if (err) {
                 return this.callback(err);
               }
@@ -271,7 +260,7 @@ vows
           );
         },
 
-        'containing no tables': function(err, tables) {
+        'containing no tables': function (err, tables) {
           assert.isNotNull(tables);
           assert.equal(tables.length, 0);
         }
@@ -280,7 +269,7 @@ vows
   })
   .addBatch({
     renameTable: {
-      topic: function() {
+      topic: function () {
         db.createTable(
           'event',
           {
@@ -290,7 +279,7 @@ vows
               autoIncrement: true
             }
           },
-          function() {
+          function () {
             db.renameTable(
               'event',
               'functions',
@@ -301,11 +290,11 @@ vows
       },
 
       'has table metadata': {
-        topic: function() {
+        topic: function () {
           dbmeta(
             'pg',
             { connection: db.connection },
-            function(err, meta) {
+            function (err, meta) {
               if (err) {
                 return this.callback(err);
               }
@@ -314,21 +303,21 @@ vows
           );
         },
 
-        'containing the functions table': function(err, tables) {
+        'containing the functions table': function (err, tables) {
           assert.isNotNull(tables);
           assert.equal(tables.length, 1);
           assert.equal(tables[0].getName(), 'functions');
         }
       },
 
-      teardown: function() {
+      teardown: function () {
         db.dropTable('functions', this.callback);
       }
     }
   })
   .addBatch({
     addColumn: {
-      topic: function() {
+      topic: function () {
         db.createTable(
           'event',
           {
@@ -338,7 +327,7 @@ vows
               autoIncrement: true
             }
           },
-          function() {
+          function () {
             db.addColumn(
               'event',
               'title',
@@ -350,11 +339,11 @@ vows
       },
 
       'has column metadata': {
-        topic: function() {
+        topic: function () {
           dbmeta(
             'pg',
             { connection: db.connection },
-            function(err, meta) {
+            function (err, meta) {
               if (err) {
                 return this.callback(err);
               }
@@ -363,7 +352,7 @@ vows
           );
         },
 
-        'with additional title column': function(err, columns) {
+        'with additional title column': function (err, columns) {
           assert.isNotNull(columns);
           assert.equal(columns.length, 2);
           var column = findByName(columns, 'title');
@@ -372,14 +361,14 @@ vows
         }
       },
 
-      teardown: function() {
+      teardown: function () {
         db.dropTable('event', this.callback);
       }
     }
   })
   .addBatch({
     removeColumn: {
-      topic: function() {
+      topic: function () {
         db.createTable(
           'event',
           {
@@ -389,12 +378,12 @@ vows
               autoIncrement: true
             }
           },
-          function() {
+          function () {
             db.addColumn(
               'event',
               'title',
               'string',
-              function(err) {
+              function (err) {
                 db.removeColumn(
                   'event',
                   'title',
@@ -407,11 +396,11 @@ vows
       },
 
       'has column metadata': {
-        topic: function() {
+        topic: function () {
           dbmeta(
             'pg',
             { connection: db.connection },
-            function(err, meta) {
+            function (err, meta) {
               if (err) {
                 return this.callback(err);
               }
@@ -420,21 +409,21 @@ vows
           );
         },
 
-        'without title column': function(err, columns) {
+        'without title column': function (err, columns) {
           assert.isNotNull(columns);
           assert.equal(columns.length, 1);
           assert.notEqual(columns[0].getName(), 'title');
         }
       },
 
-      teardown: function() {
+      teardown: function () {
         db.dropTable('event', this.callback);
       }
     }
   })
   .addBatch({
     renameColumn: {
-      topic: function() {
+      topic: function () {
         db.createTable(
           'event',
           {
@@ -444,12 +433,12 @@ vows
               autoIncrement: true
             }
           },
-          function() {
+          function () {
             db.addColumn(
               'event',
               'title',
               'string',
-              function(err) {
+              function (err) {
                 db.renameColumn(
                   'event',
                   'title',
@@ -463,11 +452,11 @@ vows
       },
 
       'has column metadata': {
-        topic: function() {
+        topic: function () {
           dbmeta(
             'pg',
             { connection: db.connection },
-            function(err, meta) {
+            function (err, meta) {
               if (err) {
                 return this.callback(err);
               }
@@ -476,7 +465,7 @@ vows
           );
         },
 
-        'with renamed title column': function(err, columns) {
+        'with renamed title column': function (err, columns) {
           assert.isNotNull(columns);
           assert.equal(columns.length, 2);
           var column = findByName(columns, 'new_title');
@@ -484,14 +473,14 @@ vows
         }
       },
 
-      teardown: function() {
+      teardown: function () {
         db.dropTable('event', this.callback);
       }
     }
   })
   .addBatch({
     changeColumn: {
-      topic: function() {
+      topic: function () {
         db.createTable(
           'event',
           {
@@ -514,7 +503,7 @@ vows
               notNull: true
             }
           },
-          function() {
+          function () {
             var spec = { notNull: false, defaultValue: 'foo2', unique: false },
               spec2 = { notNull: true, unsigned: true },
               spec3 = {
@@ -531,17 +520,17 @@ vows
               'event',
               'txt',
               spec,
-              function() {
+              function () {
                 db.changeColumn(
                   'event',
                   'keep_id',
                   spec2,
-                  function() {
+                  function () {
                     db.changeColumn(
                       'event',
                       'type_test',
                       spec3,
-                      function() {
+                      function () {
                         db.changeColumn(
                           'event',
                           'type_length_test',
@@ -558,11 +547,11 @@ vows
         );
       },
       'has column metadata': {
-        topic: function() {
+        topic: function () {
           dbmeta(
             'pg',
             { connection: db.connection },
-            function(err, meta) {
+            function (err, meta) {
               if (err) {
                 return this.callback(err);
               }
@@ -571,7 +560,7 @@ vows
           );
         },
 
-        'with changed title column': function(err, columns) {
+        'with changed title column': function (err, columns) {
           assert.isNotNull(columns);
           assert.equal(columns.length, 5);
 
@@ -597,14 +586,14 @@ vows
         }
       },
 
-      teardown: function() {
+      teardown: function () {
         db.dropTable('event', this.callback);
       }
     }
   })
   .addBatch({
     addIndex: {
-      topic: function() {
+      topic: function () {
         db.createTable(
           'event',
           {
@@ -615,7 +604,7 @@ vows
             },
             title: { type: dataType.STRING }
           },
-          function() {
+          function () {
             db.addIndex(
               'event',
               'event_title',
@@ -627,11 +616,11 @@ vows
       },
 
       'has resulting index metadata': {
-        topic: function() {
+        topic: function () {
           dbmeta(
             'pg',
             { connection: db.connection },
-            function(err, meta) {
+            function (err, meta) {
               if (err) {
                 return this.callback(err);
               }
@@ -640,7 +629,7 @@ vows
           );
         },
 
-        'with additional index': function(err, indexes) {
+        'with additional index': function (err, indexes) {
           assert.isNotNull(indexes);
           assert.equal(indexes.length, 2);
           var index = findByName(indexes, 'event_title');
@@ -650,14 +639,14 @@ vows
         }
       },
 
-      teardown: function() {
+      teardown: function () {
         db.dropTable('event', this.callback);
       }
     }
   })
   .addBatch({
     addForeignKey: {
-      topic: function() {
+      topic: function () {
         db.createTable(
           'event',
           {
@@ -669,7 +658,7 @@ vows
             event_id: { type: dataType.INTEGER, notNull: true },
             title: { type: dataType.STRING }
           },
-          function() {
+          function () {
             db.createTable(
               'event_type',
               {
@@ -680,7 +669,7 @@ vows
                 },
                 title: { type: dataType.STRING }
               },
-              function() {
+              function () {
                 // lowercase table names because they are quoted in the function
                 // and pg uses lowercase internally
                 db.addForeignKey(
@@ -702,7 +691,7 @@ vows
       },
 
       'sets usage and constraints': {
-        topic: function() {
+        topic: function () {
           var metaQuery = [
             'SELECT',
             ' tc.table_schema, tc.table_name as ortn, kcu.column_name orcn, ccu.table_name,',
@@ -726,7 +715,7 @@ vows
           db.runSql(metaQuery, ['public', 'event', 'event_id'], this.callback);
         },
 
-        'with correct references': function(err, result) {
+        'with correct references': function (err, result) {
           var rows = result.rows;
           assert.isNotNull(rows);
           assert.equal(rows.length, 1);
@@ -735,7 +724,7 @@ vows
           assert.equal(row.column_name, 'id');
         },
 
-        'and correct rules': function(err, result) {
+        'and correct rules': function (err, result) {
           var rows = result.rows;
           assert.isNotNull(rows);
           assert.equal(rows.length, 1);
@@ -745,9 +734,9 @@ vows
         }
       },
 
-      teardown: function() {
+      teardown: function () {
         db.dropTable('event')
-          .then(function() {
+          .then(function () {
             return db.dropTable('event_type');
           })
           .nodeify(this.callback);
@@ -756,7 +745,7 @@ vows
   })
   .addBatch({
     removeForeignKey: {
-      topic: function() {
+      topic: function () {
         db.createTable(
           'event',
           {
@@ -768,7 +757,7 @@ vows
             event_id: { type: dataType.INTEGER, notNull: true },
             title: { type: dataType.STRING }
           },
-          function() {
+          function () {
             db.createTable(
               'event_type',
               {
@@ -779,7 +768,7 @@ vows
                 },
                 title: { type: dataType.STRING }
               },
-              function() {
+              function () {
                 db.addForeignKey(
                   'event',
                   'event_type',
@@ -790,7 +779,7 @@ vows
                   {
                     onDelete: 'CASCADE'
                   },
-                  function() {
+                  function () {
                     db.removeForeignKey(
                       'event',
                       'fk_event_event_type',
@@ -804,16 +793,16 @@ vows
         );
       },
 
-      teardown: function() {
+      teardown: function () {
         db.dropTable('event')
-          .then(function() {
+          .then(function () {
             return db.dropTable('event_type');
           })
           .nodeify(this.callback);
       },
 
       'removes usage and constraints': {
-        topic: function() {
+        topic: function () {
           var metaQuery = [
             'SELECT',
             ' tc.table_schema, tc.table_name as ortn, kcu.column_name orcn, ccu.table_name,',
@@ -837,7 +826,7 @@ vows
           db.runSql(metaQuery, ['public', 'event', 'event_id'], this.callback);
         },
 
-        completely: function(err, result) {
+        completely: function (err, result) {
           assert.isNotNull(result.rows);
           assert.equal(result.rows.length, 0);
         }
@@ -846,7 +835,7 @@ vows
   })
   .addBatch({
     'addForeign by addcolumn with spec': {
-      topic: function() {
+      topic: function () {
         db.createTable(
           'event',
           {
@@ -858,7 +847,7 @@ vows
             event_id: { type: dataType.INTEGER, notNull: true },
             title: { type: dataType.STRING }
           },
-          function() {
+          function () {
             db.createTable(
               'event_type',
               {
@@ -869,7 +858,7 @@ vows
                 },
                 title: { type: dataType.STRING }
               },
-              function() {
+              function () {
                 db.addColumn(
                   'event_type',
                   'event_id',
@@ -894,16 +883,16 @@ vows
         );
       },
 
-      teardown: function() {
+      teardown: function () {
         db.dropTable('event_type')
-          .then(function(data) {
+          .then(function (data) {
             return db.dropTable('event');
           })
           .nodeify(this.callback);
       },
 
       'sets usage and constraints': {
-        topic: function() {
+        topic: function () {
           var metaQuery = [
             'SELECT',
             ' tc.table_schema, tc.table_name as ortn, kcu.column_name orcn, ccu.table_name,',
@@ -931,7 +920,7 @@ vows
           );
         },
 
-        'with correct references': function(err, result) {
+        'with correct references': function (err, result) {
           var rows = result.rows;
           assert.isNotNull(rows);
           assert.equal(rows.length, 1);
@@ -940,7 +929,7 @@ vows
           assert.equal(row.column_name, 'id');
         },
 
-        'and correct rules': function(err, result) {
+        'and correct rules': function (err, result) {
           var rows = result.rows;
           assert.isNotNull(rows);
           assert.equal(rows.length, 1);
@@ -953,7 +942,7 @@ vows
   })
   .addBatch({
     insert: {
-      topic: function() {
+      topic: function () {
         db.createTable('event', {
           id: {
             type: dataType.INTEGER,
@@ -962,27 +951,27 @@ vows
           },
           title: { type: dataType.STRING }
         })
-          .then(function() {
+          .then(function () {
             return db.insert('event', ['id', 'title'], [2, 'title']);
           })
-          .then(function() {
+          .then(function () {
             return db.runSql('SELECT * from event');
           })
           .nodeify(this.callback);
       },
 
-      'with additional row': function(err, data) {
+      'with additional row': function (err, data) {
         assert.equal(data.rowCount, 1);
       },
 
-      teardown: function() {
+      teardown: function () {
         db.dropTable('event', this.callback);
       }
     }
   })
   .addBatch({
     insertWithSingleQuotes: {
-      topic: function() {
+      topic: function () {
         db.createTable('event', {
           id: {
             type: dataType.INTEGER,
@@ -991,31 +980,31 @@ vows
           },
           title: { type: dataType.STRING }
         })
-          .then(function() {
+          .then(function () {
             return db.insert(
               'event',
               ['id', 'title'],
               [2, "Bill's Mother's House"]
             );
           })
-          .then(function() {
+          .then(function () {
             return db.runSql('SELECT * from event');
           })
           .nodeify(this.callback);
       },
 
-      'with additional row': function(err, data) {
+      'with additional row': function (err, data) {
         assert.equal(data.rowCount, 1);
       },
 
-      teardown: function() {
+      teardown: function () {
         db.dropTable('event', this.callback);
       }
     }
   })
   .addBatch({
     removeIndex: {
-      topic: function() {
+      topic: function () {
         db.createTable(
           'event',
           {
@@ -1025,12 +1014,12 @@ vows
               autoIncrement: true
             }
           },
-          function() {
+          function () {
             db.addIndex(
               'event',
               'event_title',
               'title',
-              function(err) {
+              function (err) {
                 db.removeIndex('event_title', this.callback.bind(this, null));
               }.bind(this)
             );
@@ -1039,11 +1028,11 @@ vows
       },
 
       'has resulting index metadata': {
-        topic: function() {
+        topic: function () {
           dbmeta(
             'pg',
             { connection: db.connection },
-            function(err, meta) {
+            function (err, meta) {
               if (err) {
                 return this.callback(err);
               }
@@ -1052,29 +1041,29 @@ vows
           );
         },
 
-        'without index': function(err, indexes) {
+        'without index': function (err, indexes) {
           assert.isNotNull(indexes);
           assert.equal(indexes.length, 1); // first index is primary key
         }
       },
 
-      teardown: function() {
+      teardown: function () {
         db.dropTable('event', this.callback);
       }
     }
   })
   .addBatch({
     createMigrationsTable: {
-      topic: function() {
+      topic: function () {
         db.createMigrationsTable(this.callback.bind(this, null));
       },
 
       'has migrations table': {
-        topic: function() {
+        topic: function () {
           dbmeta(
             'pg',
             { connection: db.connection },
-            function(err, meta) {
+            function (err, meta) {
               if (err) {
                 return this.callback(err);
               }
@@ -1083,7 +1072,7 @@ vows
           );
         },
 
-        'has migrations table': function(err, tables) {
+        'has migrations table': function (err, tables) {
           assert.isNull(err);
           assert.isNotNull(tables);
           assert.equal(tables.length, 1);
@@ -1091,11 +1080,11 @@ vows
         },
 
         'that has columns': {
-          topic: function() {
+          topic: function () {
             dbmeta(
               'pg',
               { connection: db.connection },
-              function(err, meta) {
+              function (err, meta) {
                 if (err) {
                   return this.callback(err);
                 }
@@ -1104,7 +1093,7 @@ vows
             );
           },
 
-          'with names': function(err, columns) {
+          'with names': function (err, columns) {
             assert.isNotNull(columns);
             assert.equal(columns.length, 3);
             var column = findByName(columns, 'id');
@@ -1120,14 +1109,14 @@ vows
         }
       },
 
-      teardown: function() {
+      teardown: function () {
         db.dropTable('migrations', this.callback);
       }
     }
   })
   .export(module);
 
-function findByName(columns, name) {
+function findByName (columns, name) {
   for (var i = 0; i < columns.length; i++) {
     if (columns[i].getName() === name) {
       return columns[i];

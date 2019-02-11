@@ -4,10 +4,8 @@ var semver = require('semver');
 var Base = require('db-migrate-base');
 var Promise = require('bluebird');
 
-var internals = {};
-
 var PgDriver = Base.extend({
-  init: function(connection, schema, intern) {
+  init: function (connection, schema, intern) {
     this.log = intern.mod.log;
     this.type = intern.mod.type;
     this._escapeString = "'";
@@ -17,22 +15,22 @@ var PgDriver = Base.extend({
     this.schema = schema || 'public';
   },
 
-  startMigration: function(cb) {
+  startMigration: function (cb) {
     if (!this.internals.notransactions) {
       return this.runSql('BEGIN;').nodeify(cb);
     } else return Promise.resolve().nodeify(cb);
   },
 
-  endMigration: function(cb) {
+  endMigration: function (cb) {
     if (!this.internals.notransactions) {
       return this.runSql('COMMIT;').nodeify(cb);
     } else return Promise.resolve(null).nodeify(cb);
   },
 
-  createColumnDef: function(name, spec, options, tableName) {
+  createColumnDef: function (name, spec, options, tableName) {
     // add support for datatype timetz, timestamptz
     // https://www.postgresql.org/docs/9.5/static/datatype.html
-    spec.type = spec.type.replace(/^(time|timestamp)tz$/, function($, type) {
+    spec.type = spec.type.replace(/^(time|timestamp)tz$/, function ($, type) {
       spec.timezone = true;
       return type;
     });
@@ -56,7 +54,7 @@ var PgDriver = Base.extend({
     };
   },
 
-  _translateSpecialDefaultValues: function(
+  _translateSpecialDefaultValues: function (
     spec,
     options,
     tableName,
@@ -72,7 +70,7 @@ var PgDriver = Base.extend({
     }
   },
 
-  mapDataType: function(str) {
+  mapDataType: function (str) {
     switch (str) {
       case 'json':
       case 'jsonb':
@@ -87,7 +85,7 @@ var PgDriver = Base.extend({
     return this._super(str);
   },
 
-  createDatabase: function(dbName, options, callback) {
+  createDatabase: function (dbName, options, callback) {
     var spec = '';
 
     if (typeof options === 'function') callback = options;
@@ -98,7 +96,7 @@ var PgDriver = Base.extend({
     );
   },
 
-  dropDatabase: function(dbName, options, callback) {
+  dropDatabase: function (dbName, options, callback) {
     var ifExists = '';
 
     if (typeof options === 'function') callback = options;
@@ -112,7 +110,7 @@ var PgDriver = Base.extend({
     );
   },
 
-  createSequence: function(sqName, options, callback) {
+  createSequence: function (sqName, options, callback) {
     var spec = '';
     var temp = '';
 
@@ -127,7 +125,7 @@ var PgDriver = Base.extend({
     );
   },
 
-  switchDatabase: function(options, callback) {
+  switchDatabase: function (options, callback) {
     if (typeof options === 'object') {
       if (typeof options.database === 'string') {
         this.log.info(
@@ -143,7 +141,7 @@ var PgDriver = Base.extend({
     } else callback(null);
   },
 
-  dropSequence: function(dbName, options, callback) {
+  dropSequence: function (dbName, options, callback) {
     var ifExists = '';
     var rule = '';
 
@@ -161,7 +159,7 @@ var PgDriver = Base.extend({
     );
   },
 
-  createMigrationsTable: function(callback) {
+  createMigrationsTable: function (callback) {
     var options = {
       columns: {
         id: {
@@ -178,7 +176,7 @@ var PgDriver = Base.extend({
 
     return this.all('show server_version_num')
       .then(
-        function(result) {
+        function (result) {
           if (result && result.length > 0 && result[0].server_version_num) {
             var version = result[0].server_version_num;
             var major = Math.floor(version / 10000);
@@ -195,9 +193,9 @@ var PgDriver = Base.extend({
       )
       .catch(
         // not all DBs support server_version_num, fall back to server_version
-        function() {
+        function () {
           return this.all('show server_version').then(
-            function(result) {
+            function (result) {
               if (result && result.length > 0 && result[0].server_version) {
                 var version = result[0].server_version;
                 // handle versions like “10.2 (Ubuntu 10.2)”
@@ -216,7 +214,7 @@ var PgDriver = Base.extend({
         }.bind(this)
       )
       .then(
-        function(result) {
+        function (result) {
           var searchPath;
           var searchPathes = result[0].search_path.split(',');
 
@@ -241,7 +239,7 @@ var PgDriver = Base.extend({
         }.bind(this)
       )
       .then(
-        function() {
+        function () {
           return this.all(
             "SELECT table_name FROM information_schema.tables WHERE table_name = '" +
               this.internals.migrationTable +
@@ -251,7 +249,7 @@ var PgDriver = Base.extend({
         }.bind(this)
       )
       .then(
-        function(result) {
+        function (result) {
           if (result && result && result.length < 1) {
             return this.createTable(this.internals.migrationTable, options);
           } else {
@@ -262,7 +260,7 @@ var PgDriver = Base.extend({
       .nodeify(callback);
   },
 
-  createSeedsTable: function(callback) {
+  createSeedsTable: function (callback) {
     var options = {
       columns: {
         id: {
@@ -279,7 +277,7 @@ var PgDriver = Base.extend({
 
     return this.all('select version() as version')
       .then(
-        function(result) {
+        function (result) {
           if (result && result && result.length > 0 && result[0].version) {
             var version = result[0].version;
             var match = version.match(/\d+\.\d+\.\d+/);
@@ -294,7 +292,7 @@ var PgDriver = Base.extend({
         }.bind(this)
       )
       .then(
-        function(result) {
+        function (result) {
           var searchPath;
 
           // if the user specified a different schema, prepend it to the
@@ -310,7 +308,7 @@ var PgDriver = Base.extend({
         }.bind(this)
       )
       .then(
-        function() {
+        function () {
           return this.all(
             "SELECT table_name FROM information_schema.tables WHERE table_name = '" +
               this.internals.seedTable +
@@ -320,7 +318,7 @@ var PgDriver = Base.extend({
         }.bind(this)
       )
       .then(
-        function(result) {
+        function (result) {
           if (result && result && result.length < 1) {
             return this.createTable(this.internals.seedTable, options);
           } else {
@@ -331,7 +329,7 @@ var PgDriver = Base.extend({
       .nodeify(callback);
   },
 
-  createColumnConstraint: function(spec, options, tableName, columnName) {
+  createColumnConstraint: function (spec, options, tableName, columnName) {
     var constraint = [];
     var callbacks = [];
     var cb;
@@ -376,7 +374,7 @@ var PgDriver = Base.extend({
     if (spec.comment) {
       // TODO: create a new function addComment is not callable from here
       callbacks.push(
-        function(tableName, columnName, comment, callback) {
+        function (tableName, columnName, comment, callback) {
           var sql = util.format(
             "COMMENT on COLUMN %s.%s IS '%s'",
             tableName,
@@ -395,7 +393,7 @@ var PgDriver = Base.extend({
     };
   },
 
-  renameTable: function(tableName, newTableName, callback) {
+  renameTable: function (tableName, newTableName, callback) {
     var sql = util.format(
       'ALTER TABLE "%s" RENAME TO "%s"',
       tableName,
@@ -404,7 +402,7 @@ var PgDriver = Base.extend({
     return this.runSql(sql).nodeify(callback);
   },
 
-  removeColumn: function(tableName, columnName, callback) {
+  removeColumn: function (tableName, columnName, callback) {
     var sql = util.format(
       'ALTER TABLE "%s" DROP COLUMN "%s"',
       tableName,
@@ -414,7 +412,7 @@ var PgDriver = Base.extend({
     return this.runSql(sql).nodeify(callback);
   },
 
-  renameColumn: function(tableName, oldColumnName, newColumnName, callback) {
+  renameColumn: function (tableName, oldColumnName, newColumnName, callback) {
     var sql = util.format(
       'ALTER TABLE "%s" RENAME COLUMN "%s" TO "%s"',
       tableName,
@@ -424,10 +422,10 @@ var PgDriver = Base.extend({
     return this.runSql(sql).nodeify(callback);
   },
 
-  changeColumn: function(tableName, columnName, columnSpec, callback) {
+  changeColumn: function (tableName, columnName, columnSpec, callback) {
     return setNotNull.call(this);
 
-    function setNotNull() {
+    function setNotNull () {
       var setOrDrop = columnSpec.notNull === true ? 'SET' : 'DROP';
       var sql = util.format(
         'ALTER TABLE "%s" ALTER COLUMN "%s" %s NOT NULL',
@@ -439,7 +437,7 @@ var PgDriver = Base.extend({
       return this.runSql(sql).nodeify(setUnique.bind(this));
     }
 
-    function setUnique(err) {
+    function setUnique (err) {
       if (err) {
         return Promise.reject(err);
       }
@@ -467,7 +465,7 @@ var PgDriver = Base.extend({
       }
     }
 
-    function setDefaultValue(err) {
+    function setDefaultValue (err) {
       if (err) {
         return Promise.reject(err).nodeify(callback);
       }
@@ -499,16 +497,16 @@ var PgDriver = Base.extend({
         .nodeify(callback);
     }
 
-    function setType() {
+    function setType () {
       if (columnSpec.type !== undefined) {
         var using =
           columnSpec.using !== undefined
             ? columnSpec.using
             : util.format(
-                'USING "%s"::%s',
-                columnName,
-                this.mapDataType(columnSpec.type)
-              );
+              'USING "%s"::%s',
+              columnName,
+              this.mapDataType(columnSpec.type)
+            );
         var len = columnSpec.length
           ? util.format('(%s)', columnSpec.length)
           : '';
@@ -525,7 +523,7 @@ var PgDriver = Base.extend({
     }
   },
 
-  addForeignKey: function(
+  addForeignKey: function (
     tableName,
     referencedTableName,
     keyName,
@@ -538,7 +536,7 @@ var PgDriver = Base.extend({
       rules = {};
     }
     var columns = Object.keys(fieldMapping);
-    var referencedColumns = columns.map(function(key) {
+    var referencedColumns = columns.map(function (key) {
       return '"' + fieldMapping[key] + '"';
     });
     var sql = util.format(
@@ -554,7 +552,7 @@ var PgDriver = Base.extend({
     return this.runSql(sql).nodeify(callback);
   },
 
-  removeForeignKey: function(tableName, keyName, callback) {
+  removeForeignKey: function (tableName, keyName, callback) {
     var sql = util.format(
       'ALTER TABLE "%s" DROP CONSTRAINT "%s"',
       tableName,
@@ -563,21 +561,21 @@ var PgDriver = Base.extend({
     return this.runSql(sql).nodeify(callback);
   },
 
-  insert: function() {
+  insert: function () {
     var index = 1;
 
     if (arguments.length > 3) {
       index = 2;
     }
 
-    arguments[index] = arguments[index].map(function(value) {
+    arguments[index] = arguments[index].map(function (value) {
       return typeof value === 'string' ? value : JSON.stringify(value);
     });
 
     return this._super.apply(this, arguments);
   },
 
-  runSql: function() {
+  runSql: function () {
     var callback;
     var minLength = 1;
     var params;
@@ -606,8 +604,8 @@ var PgDriver = Base.extend({
     }
 
     return new Promise(
-      function(resolve, reject) {
-        var prCB = function(err, data) {
+      function (resolve, reject) {
+        var prCB = function (err, data) {
           return err ? reject(err) : resolve(data);
         };
 
@@ -619,25 +617,25 @@ var PgDriver = Base.extend({
     ).nodeify(callback);
   },
 
-  all: function() {
+  all: function () {
     var params = arguments;
 
     this.log.sql.apply(null, params);
 
     return new Promise(
-      function(resolve, reject) {
-        var prCB = function(err, data) {
+      function (resolve, reject) {
+        var prCB = function (err, data) {
           return err ? reject(err) : resolve(data);
         };
 
-        this.connection.query(params[0], function(err, result) {
+        this.connection.query(params[0], function (err, result) {
           prCB(err, result ? result.rows : result);
         });
       }.bind(this)
     ).nodeify(params[1]);
   },
 
-  close: function(callback) {
+  close: function (callback) {
     this.connection.end();
     if (typeof callback === 'function') {
       return Promise.resolve().nodeify(callback);
@@ -647,9 +645,7 @@ var PgDriver = Base.extend({
 
 Promise.promisifyAll(PgDriver);
 
-exports.connect = function(config, intern, callback) {
-  internals = intern;
-
+exports.connect = function (config, intern, callback) {
   if (config.native) {
     pg = pg.native;
   }
@@ -657,7 +653,7 @@ exports.connect = function(config, intern, callback) {
     config.database = 'postgres';
   }
   var db = config.db || new pg.Client(config);
-  db.connect(function(err) {
+  db.connect(function (err) {
     if (err) {
       callback(err);
     }
