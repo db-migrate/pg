@@ -1,3 +1,14 @@
+<a name="0.5.0"></a>
+# [0.5.0](https://github.com/db-migrate/pg/compare/v0.4.0...v0.5.0) (2019-02-11)
+
+
+### Features
+
+* **defaultValue:** add advanced handling for defaultValues ([a13c0e0](https://github.com/db-migrate/pg/commit/a13c0e0))
+* **defaultValue:** add support for timestamps and add internal handling ([46f01a2](https://github.com/db-migrate/pg/commit/46f01a2))
+
+
+
 <a name="0.4.0"></a>
 # [0.4.0](https://github.com/db-migrate/pg/compare/v0.3.1...v0.4.0) (2018-04-02)
 
