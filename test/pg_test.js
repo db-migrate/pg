@@ -88,7 +88,19 @@ vows
             dt: dataType.DATE,
             dti: dataType.DATE_TIME,
             dti_tz: { type: dataType.DATE_TIME, timezone: true },
-            bl: dataType.BOOLEAN
+            bl: dataType.BOOLEAN,
+            raw: {
+              type: 'TIMESTAMP',
+              defaultValue: {
+                raw: 'CURRENT_TIMESTAMP'
+              }
+            },
+            special: {
+              type: 'TIMESTAMP',
+              defaultValue: {
+                special: 'CURRENT_TIMESTAMP'
+              }
+            }
           },
           this.callback.bind(this)
         );
@@ -128,9 +140,9 @@ vows
           );
         },
 
-        'with 11 columns': function(err, columns) {
+        'with 13 columns': function(err, columns) {
           assert.isNotNull(columns);
-          assert.equal(columns.length, 11);
+          assert.equal(columns.length, 13);
         },
 
         'that has integer id column that is primary key, non-nullable, and auto increments': function(
@@ -206,6 +218,16 @@ vows
           var column = findByName(columns, 'smalint');
           assert.equal(column.getDataType(), 'SMALLINT');
           assert.equal(column.isNullable(), true);
+        },
+
+        'that has raw column': function(err, columns) {
+          var column = findByName(columns, 'raw');
+          assert.equal(column.getDefaultValue(), 'now()');
+        },
+
+        'that has special CURRENT_TIMESTAMP column': function(err, columns) {
+          var column = findByName(columns, 'special');
+          assert.equal(column.getDefaultValue(), 'now()');
         }
       },
 
