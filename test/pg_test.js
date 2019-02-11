@@ -110,8 +110,9 @@ vows
         },
 
         'containing the event table': function (err, tables) {
-          assert.equal(tables.length, 1);
-          assert.equal(tables[0].getName(), 'event');
+          assert.isNull(err);
+          assert.strictEqual(tables.length, 1);
+          assert.strictEqual(tables[0].getName(), 'event');
         }
       },
 
@@ -130,93 +131,110 @@ vows
         },
 
         'with 13 columns': function (err, columns) {
+          assert.isNull(err);
           assert.isNotNull(columns);
-          assert.equal(columns.length, 13);
+          assert.strictEqual(columns.length, 13);
         },
 
         'that has integer id column that is primary key, non-nullable, and auto increments': function (
           err,
           columns
         ) {
+          assert.isNull(err);
           var column = findByName(columns, 'id');
-          assert.equal(column.getDataType(), 'INTEGER');
-          assert.equal(column.isPrimaryKey(), true);
-          assert.equal(column.isNullable(), false);
-          assert.equal(column.isAutoIncrementing(), true);
+          assert.strictEqual(column.getDataType(), 'INTEGER');
+          assert.strictEqual(column.isPrimaryKey(), true);
+          assert.strictEqual(column.isNullable(), false);
+          assert.strictEqual(column.isAutoIncrementing(), true);
         },
 
         'that has text str column that is unique': function (err, columns) {
+          assert.isNull(err);
           var column = findByName(columns, 'str');
-          assert.equal(column.getDataType(), 'CHARACTER VARYING');
-          assert.equal(column.isUnique(), true);
+          assert.strictEqual(column.getDataType(), 'CHARACTER VARYING');
+          assert.strictEqual(column.isUnique(), true);
         },
 
         'that has text txt column that is non-nullable': function (
           err,
           columns
         ) {
+          assert.isNull(err);
           var column = findByName(columns, 'txt');
-          assert.equal(column.getDataType(), 'TEXT');
-          assert.equal(column.isNullable(), false);
-          // assert.equal(column.getDefaultValue(), 'foo');
+          assert.strictEqual(column.getDataType(), 'TEXT');
+          assert.strictEqual(column.isNullable(), false);
+          // assert.strictEqual(column.getDefaultValue(), 'foo');
         },
 
         'that has integer intg column': function (err, columns) {
+          assert.isNull(err);
           var column = findByName(columns, 'intg');
-          assert.equal(column.getDataType(), 'INTEGER');
-          assert.equal(column.isNullable(), true);
+          assert.strictEqual(column.getDataType(), 'INTEGER');
+          assert.strictEqual(column.isNullable(), true);
         },
 
         'that has real rel column': function (err, columns) {
+          assert.isNull(err);
           var column = findByName(columns, 'rel');
-          assert.equal(column.getDataType(), 'REAL');
-          assert.equal(column.isNullable(), true);
+          assert.strictEqual(column.getDataType(), 'REAL');
+          assert.strictEqual(column.isNullable(), true);
         },
 
         'that has integer dt column': function (err, columns) {
+          assert.isNull(err);
           var column = findByName(columns, 'dt');
-          assert.equal(column.getDataType(), 'DATE');
-          assert.equal(column.isNullable(), true);
+          assert.strictEqual(column.getDataType(), 'DATE');
+          assert.strictEqual(column.isNullable(), true);
         },
 
         'that has integer dti column': function (err, columns) {
+          assert.isNull(err);
           var column = findByName(columns, 'dti');
-          assert.equal(column.getDataType(), 'TIMESTAMP WITHOUT TIME ZONE');
-          assert.equal(column.isNullable(), true);
+          assert.strictEqual(
+            column.getDataType(),
+            'TIMESTAMP WITHOUT TIME ZONE'
+          );
+          assert.strictEqual(column.isNullable(), true);
         },
 
         'that has timestamp with time zone column': function (err, columns) {
+          assert.isNull(err);
           var column = findByName(columns, 'dti_tz');
-          assert.equal(column.getDataType(), 'TIMESTAMP WITH TIME ZONE');
-          assert.equal(column.isNullable(), true);
+          assert.strictEqual(column.getDataType(), 'TIMESTAMP WITH TIME ZONE');
+          assert.strictEqual(column.isNullable(), true);
         },
 
         'that has boolean bl column': function (err, columns) {
+          assert.isNull(err);
           var column = findByName(columns, 'bl');
-          assert.equal(column.getDataType(), 'BOOLEAN');
-          assert.equal(column.isNullable(), true);
+          assert.strictEqual(column.getDataType(), 'BOOLEAN');
+          assert.strictEqual(column.isNullable(), true);
         },
 
         'that has character chr column': function (err, columns) {
+          assert.isNull(err);
           var column = findByName(columns, 'chr');
-          assert.equal(column.getDataType(), 'CHARACTER');
-          assert.equal(column.isNullable(), true);
+          assert.strictEqual(column.getDataType(), 'CHARACTER');
+          assert.strictEqual(column.isNullable(), true);
         },
 
         'that has small integer smalint column': function (err, columns) {
+          assert.isNull(err);
           var column = findByName(columns, 'smalint');
-          assert.equal(column.getDataType(), 'SMALLINT');
-          assert.equal(column.isNullable(), true);
+          assert.strictEqual(column.getDataType(), 'SMALLINT');
+          assert.strictEqual(column.isNullable(), true);
         },
 
         'that has raw column': function (err, columns) {
+          assert.isNull(err);
           var column = findByName(columns, 'raw');
-          assert.equal(column.getDefaultValue(), 'now()');
+          assert.strictEqual(column.getDefaultValue(), 'now()');
         },
 
         'that has special CURRENT_TIMESTAMP column': function (err, columns) {
+          assert.isNull(err);
           var column = findByName(columns, 'special');
-          assert.equal(column.getDefaultValue(), 'now()');
+          assert.strictEqual(column.getDefaultValue(), 'now()');
         }
       },
 
@@ -261,8 +279,9 @@ vows
         },
 
         'containing no tables': function (err, tables) {
+          assert.isNull(err);
           assert.isNotNull(tables);
-          assert.equal(tables.length, 0);
+          assert.strictEqual(tables.length, 0);
         }
       }
     }
@@ -304,9 +323,10 @@ vows
         },
 
         'containing the functions table': function (err, tables) {
+          assert.isNull(err);
           assert.isNotNull(tables);
-          assert.equal(tables.length, 1);
-          assert.equal(tables[0].getName(), 'functions');
+          assert.strictEqual(tables.length, 1);
+          assert.strictEqual(tables[0].getName(), 'functions');
         }
       },
 
@@ -353,11 +373,12 @@ vows
         },
 
         'with additional title column': function (err, columns) {
+          assert.isNull(err);
           assert.isNotNull(columns);
-          assert.equal(columns.length, 2);
+          assert.strictEqual(columns.length, 2);
           var column = findByName(columns, 'title');
-          assert.equal(column.getName(), 'title');
-          assert.equal(column.getDataType(), 'CHARACTER VARYING');
+          assert.strictEqual(column.getName(), 'title');
+          assert.strictEqual(column.getDataType(), 'CHARACTER VARYING');
         }
       },
 
@@ -384,6 +405,7 @@ vows
               'title',
               'string',
               function (err) {
+                assert.isNull(err);
                 db.removeColumn(
                   'event',
                   'title',
@@ -410,9 +432,10 @@ vows
         },
 
         'without title column': function (err, columns) {
+          assert.isNull(err);
           assert.isNotNull(columns);
-          assert.equal(columns.length, 1);
-          assert.notEqual(columns[0].getName(), 'title');
+          assert.strictEqual(columns.length, 1);
+          assert.notStrictEqual(columns[0].getName(), 'title');
         }
       },
 
@@ -439,6 +462,7 @@ vows
               'title',
               'string',
               function (err) {
+                assert.isNull(err);
                 db.renameColumn(
                   'event',
                   'title',
@@ -466,10 +490,11 @@ vows
         },
 
         'with renamed title column': function (err, columns) {
+          assert.isNull(err);
           assert.isNotNull(columns);
-          assert.equal(columns.length, 2);
+          assert.strictEqual(columns.length, 2);
           var column = findByName(columns, 'new_title');
-          assert.equal(column.getName(), 'new_title');
+          assert.strictEqual(column.getName(), 'new_title');
         }
       },
 
@@ -504,17 +529,17 @@ vows
             }
           },
           function () {
-            var spec = { notNull: false, defaultValue: 'foo2', unique: false },
-              spec2 = { notNull: true, unsigned: true },
-              spec3 = {
-                type: dataType.INTEGER,
-                using: util.format(
-                  'USING CAST(CAST("type_test" AS %s) AS %s)',
-                  dataType.TEXT,
-                  dataType.INTEGER
-                )
-              },
-              spec4 = { type: dataType.STRING, length: 100 };
+            var spec = { notNull: false, defaultValue: 'foo2', unique: false };
+            var spec2 = { notNull: true, unsigned: true };
+            var spec3 = {
+              type: dataType.INTEGER,
+              using: util.format(
+                'USING CAST(CAST("type_test" AS %s) AS %s)',
+                dataType.TEXT,
+                dataType.INTEGER
+              )
+            };
+            var spec4 = { type: dataType.STRING, length: 100 };
 
             db.changeColumn(
               'event',
@@ -561,28 +586,29 @@ vows
         },
 
         'with changed title column': function (err, columns) {
+          assert.isNull(err);
           assert.isNotNull(columns);
-          assert.equal(columns.length, 5);
+          assert.strictEqual(columns.length, 5);
 
           var column = findByName(columns, 'txt');
-          assert.equal(column.getName(), 'txt');
-          assert.equal(column.isNullable(), true);
-          assert.equal(column.getDefaultValue(), "'foo2'::text");
-          assert.equal(column.isUnique(), false);
+          assert.strictEqual(column.getName(), 'txt');
+          assert.strictEqual(column.isNullable(), true);
+          assert.strictEqual(column.getDefaultValue(), "'foo2'::text");
+          assert.strictEqual(column.isUnique(), false);
 
           column = findByName(columns, 'keep_id');
-          assert.equal(column.getName(), 'keep_id');
-          assert.equal(column.isNullable(), false);
-          assert.equal(column.isUnique(), true);
+          assert.strictEqual(column.getName(), 'keep_id');
+          assert.strictEqual(column.isNullable(), false);
+          assert.strictEqual(column.isUnique(), true);
 
           column = findByName(columns, 'type_test');
-          assert.equal(column.getName(), 'type_test');
-          assert.equal(dataType[column.getDataType()], dataType.INTEGER);
+          assert.strictEqual(column.getName(), 'type_test');
+          assert.strictEqual(dataType[column.getDataType()], dataType.INTEGER);
 
           column = findByName(columns, 'type_length_test');
-          assert.equal(column.getName(), 'type_length_test');
-          assert.equal(column.getDataType(), 'CHARACTER VARYING');
-          assert.equal(column.meta.character_maximum_length, 100);
+          assert.strictEqual(column.getName(), 'type_length_test');
+          assert.strictEqual(column.getDataType(), 'CHARACTER VARYING');
+          assert.strictEqual(column.meta.character_maximum_length, 100);
         }
       },
 
@@ -630,12 +656,13 @@ vows
         },
 
         'with additional index': function (err, indexes) {
+          assert.isNull(err);
           assert.isNotNull(indexes);
-          assert.equal(indexes.length, 2);
+          assert.strictEqual(indexes.length, 2);
           var index = findByName(indexes, 'event_title');
-          assert.equal(index.getName(), 'event_title');
-          assert.equal(index.getTableName(), 'event');
-          assert.equal(index.getColumnName(), 'title');
+          assert.strictEqual(index.getName(), 'event_title');
+          assert.strictEqual(index.getTableName(), 'event');
+          assert.strictEqual(index.getColumnName(), 'title');
         }
       },
 
@@ -716,21 +743,23 @@ vows
         },
 
         'with correct references': function (err, result) {
+          assert.isNull(err);
           var rows = result.rows;
           assert.isNotNull(rows);
-          assert.equal(rows.length, 1);
+          assert.strictEqual(rows.length, 1);
           var row = rows[0];
-          assert.equal(row.table_name, 'event_type');
-          assert.equal(row.column_name, 'id');
+          assert.strictEqual(row.table_name, 'event_type');
+          assert.strictEqual(row.column_name, 'id');
         },
 
         'and correct rules': function (err, result) {
+          assert.isNull(err);
           var rows = result.rows;
           assert.isNotNull(rows);
-          assert.equal(rows.length, 1);
+          assert.strictEqual(rows.length, 1);
           var row = rows[0];
-          assert.equal(row.update_rule, 'NO ACTION');
-          assert.equal(row.delete_rule, 'CASCADE');
+          assert.strictEqual(row.update_rule, 'NO ACTION');
+          assert.strictEqual(row.delete_rule, 'CASCADE');
         }
       },
 
@@ -827,8 +856,9 @@ vows
         },
 
         completely: function (err, result) {
+          assert.isNull(err);
           assert.isNotNull(result.rows);
-          assert.equal(result.rows.length, 0);
+          assert.strictEqual(result.rows.length, 0);
         }
       }
     }
@@ -921,21 +951,23 @@ vows
         },
 
         'with correct references': function (err, result) {
+          assert.isNull(err);
           var rows = result.rows;
           assert.isNotNull(rows);
-          assert.equal(rows.length, 1);
+          assert.strictEqual(rows.length, 1);
           var row = rows[0];
-          assert.equal(row.table_name, 'event');
-          assert.equal(row.column_name, 'id');
+          assert.strictEqual(row.table_name, 'event');
+          assert.strictEqual(row.column_name, 'id');
         },
 
         'and correct rules': function (err, result) {
+          assert.isNull(err);
           var rows = result.rows;
           assert.isNotNull(rows);
-          assert.equal(rows.length, 1);
+          assert.strictEqual(rows.length, 1);
           var row = rows[0];
-          assert.equal(row.update_rule, 'RESTRICT');
-          assert.equal(row.delete_rule, 'CASCADE');
+          assert.strictEqual(row.update_rule, 'RESTRICT');
+          assert.strictEqual(row.delete_rule, 'CASCADE');
         }
       }
     }
@@ -961,7 +993,8 @@ vows
       },
 
       'with additional row': function (err, data) {
-        assert.equal(data.rowCount, 1);
+        assert.isNull(err);
+        assert.strictEqual(data.rowCount, 1);
       },
 
       teardown: function () {
@@ -994,7 +1027,8 @@ vows
       },
 
       'with additional row': function (err, data) {
-        assert.equal(data.rowCount, 1);
+        assert.isNull(err);
+        assert.strictEqual(data.rowCount, 1);
       },
 
       teardown: function () {
@@ -1012,6 +1046,9 @@ vows
               type: dataType.INTEGER,
               primaryKey: true,
               autoIncrement: true
+            },
+            title: {
+              type: dataType.STRING
             }
           },
           function () {
@@ -1020,6 +1057,7 @@ vows
               'event_title',
               'title',
               function (err) {
+                assert.isNull(err);
                 db.removeIndex('event_title', this.callback.bind(this, null));
               }.bind(this)
             );
@@ -1042,8 +1080,9 @@ vows
         },
 
         'without index': function (err, indexes) {
+          assert.isNull(err);
           assert.isNotNull(indexes);
-          assert.equal(indexes.length, 1); // first index is primary key
+          assert.strictEqual(indexes.length, 1); // first index is primary key
         }
       },
 
@@ -1075,8 +1114,8 @@ vows
         'has migrations table': function (err, tables) {
           assert.isNull(err);
           assert.isNotNull(tables);
-          assert.equal(tables.length, 1);
-          assert.equal(tables[0].getName(), 'migrations');
+          assert.strictEqual(tables.length, 1);
+          assert.strictEqual(tables[0].getName(), 'migrations');
         },
 
         'that has columns': {
@@ -1094,17 +1133,21 @@ vows
           },
 
           'with names': function (err, columns) {
+            assert.isNull(err);
             assert.isNotNull(columns);
-            assert.equal(columns.length, 3);
+            assert.strictEqual(columns.length, 3);
             var column = findByName(columns, 'id');
-            assert.equal(column.getName(), 'id');
-            assert.equal(column.getDataType(), 'INTEGER');
+            assert.strictEqual(column.getName(), 'id');
+            assert.strictEqual(column.getDataType(), 'INTEGER');
             column = findByName(columns, 'name');
-            assert.equal(column.getName(), 'name');
-            assert.equal(column.getDataType(), 'CHARACTER VARYING');
+            assert.strictEqual(column.getName(), 'name');
+            assert.strictEqual(column.getDataType(), 'CHARACTER VARYING');
             column = findByName(columns, 'run_on');
-            assert.equal(column.getName(), 'run_on');
-            assert.equal(column.getDataType(), 'TIMESTAMP WITHOUT TIME ZONE');
+            assert.strictEqual(column.getName(), 'run_on');
+            assert.strictEqual(
+              column.getDataType(),
+              'TIMESTAMP WITHOUT TIME ZONE'
+            );
           }
         }
       },
