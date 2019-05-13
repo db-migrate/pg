@@ -1,3 +1,12 @@
+## [0.5.1](https://github.com/db-migrate/pg/compare/v0.5.0...v0.5.1) (2019-05-13)
+
+
+### Bug Fixes
+
+* **addForeignKey:** pass joined strings to `util.format` ([21cbfe5](https://github.com/db-migrate/pg/commit/21cbfe5))
+
+
+
 <a name="0.5.0"></a>
 # [0.5.0](https://github.com/db-migrate/pg/compare/v0.4.0...v0.5.0) (2019-02-11)
 
