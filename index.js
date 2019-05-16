@@ -627,10 +627,12 @@ var PgDriver = Base.extend({
     return this.allAsync(sql, [key]).then(([row]) => row);
   },
 
-  all: function () {
-    var params = arguments;
+  all: function (...params) {
+    let cb;
+    if (typeof params[params.length - 1] === 'function') {
+      cb = params.pop();
+    }
 
-    const cb = params[params.length - 1];
     this.log.sql.apply(null, params);
 
     return new Promise(
@@ -638,9 +640,9 @@ var PgDriver = Base.extend({
         var prCB = function (err, data) {
           return err ? reject(err) : resolve(data);
         };
-        params[params.length - 1] = function (err, result) {
+        params.push(function (err, result) {
           prCB(err, result ? result.rows : result);
-        };
+        });
 
         this.connection.query.apply(this.connection, params);
       }.bind(this)
