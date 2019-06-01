@@ -250,7 +250,7 @@ var PgDriver = Base.extend({
       )
       .then(
         function (result) {
-          if (result && result && result.length < 1) {
+          if (result && result.length < 1) {
             return this.createTable(this.internals.migrationTable, options);
           } else {
             return Promise.resolve();
@@ -278,7 +278,7 @@ var PgDriver = Base.extend({
     return this.all('select version() as version')
       .then(
         function (result) {
-          if (result && result && result.length > 0 && result[0].version) {
+          if (result && result.length > 0 && result[0].version) {
             var version = result[0].version;
             var match = version.match(/\d+\.\d+\.\d+/);
             if (match && match[0] && semver.gte(match[0], '9.1.0')) {
@@ -319,7 +319,7 @@ var PgDriver = Base.extend({
       )
       .then(
         function (result) {
-          if (result && result && result.length < 1) {
+          if (result && result.length < 1) {
             return this.createTable(this.internals.seedTable, options);
           } else {
             return Promise.resolve();
