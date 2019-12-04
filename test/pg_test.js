@@ -58,6 +58,37 @@ vows
     }
   })
   .addBatch({
+    createDatabase: {
+      topic: function () {
+        db.createDatabase(
+          'test',
+          this.callback.bind(this)
+        );
+      },
+
+      'created database': function (err) {
+        assert.isNotNull(err);
+      }
+    }
+  })
+  .addBatch({
+    'create existing database': {
+      topic: function () {
+        db.createDatabase(
+          'test',
+          {
+            ifNotExists: true
+          },
+          this.callback.bind(this)
+        );
+      },
+
+      'created existing database': function (err) {
+        assert.isNotNull(err);
+      }
+    }
+  })
+  .addBatch({
     createTable: {
       topic: function () {
         db.createTable(

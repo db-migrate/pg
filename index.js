@@ -88,12 +88,38 @@ var PgDriver = Base.extend({
   createDatabase: function (dbName, options, callback) {
     var spec = '';
 
-    if (typeof options === 'function') callback = options;
+    if (typeof options === 'function') {
+      callback = options;
+      options = {};
+    }
 
-    this.runSql(
-      util.format('CREATE DATABASE %s %s', this.escapeDDL(dbName), spec),
-      callback
-    );
+    if (options.ifNotExists) {
+      this.runSql(
+        `
+        DO
+        $do$
+        DECLARE
+          _db TEXT := '${ dbName }';
+        BEGIN
+          CREATE EXTENSION IF NOT EXISTS dblink;
+          IF EXISTS (SELECT 1 FROM pg_database WHERE datname = _db) THEN
+            RAISE NOTICE 'Database "%" already exists, skipping creation.', _db;
+          ELSE
+            PERFORM dblink_connect('dbname=' || current_database());
+            PERFORM dblink_exec('CREATE DATABASE ' || _db || ' ${ spec }');
+          END IF;
+        END
+        $do$
+        `,
+        callback
+      );
+    }
+    else {
+      this.runSql(
+        util.format('CREATE DATABASE %s %s', this.escapeDDL(dbName), spec),
+        callback
+      );
+    }
   },
 
   dropDatabase: function (dbName, options, callback) {
