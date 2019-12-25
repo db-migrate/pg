@@ -219,7 +219,7 @@ var PgDriver = Base.extend({
           var searchPathes = result[0].search_path.split(',');
 
           for (var i = 0; i < searchPathes.length; ++i) {
-            if (searchPathes[i].indexOf('"') !== 0) {
+            if (searchPathes[i].indexOf('"') !== -1) {
               searchPathes[i] = '"' + searchPathes[i].trim() + '"';
             }
           }
