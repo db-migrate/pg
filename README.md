@@ -2,12 +2,12 @@
 [![Dependency Status](https://david-dm.org/db-migrate/pg.svg)](https://david-dm.org/db-migrate/pg)
 [![devDependency Status](https://david-dm.org/db-migrate/pg/dev-status.svg)](https://david-dm.org/db-migrate/pg#info=devDependencies)
 
+# AWS Redshift
 
-# pg
-postgres driver for db-migrate
+AWS redshift driver for db-migrate
 
 ## Installation
 
 ```
-npm install --save db-migrate-pg
+npm install --save db-migrate-awsredshift
 ```
