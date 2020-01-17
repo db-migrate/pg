@@ -1,6 +1,6 @@
 {
   "name": "db-migrate-awsredshift",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "An AWS Redshift driver for db-migrate",
   "main": "index.js",
   "scripts": {

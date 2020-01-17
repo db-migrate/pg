@@ -174,13 +174,13 @@ var PgDriver = Base.extend({
       ifNotExists: false
     };
 
-    return this.all('select version() as version')
+    return this.all('select version() server_version')
       .then(
         function(result) {
           if (result && result.length > 0 && result[0].server_version) {
-            var version = result[0].version;
+            var version = result[0].server_version;
             // handle versions like “10.2 (Ubuntu 10.2)”
-            version = version.split(' ')[0];
+            version = version.split(' ')[1];
             // handle missing patch numbers
             if (version.split('.').length !== 3) {
               version += '.0';
@@ -319,7 +319,7 @@ var PgDriver = Base.extend({
 
     if (spec.primaryKey) {
       if (spec.autoIncrement) {
-        constraint.push('SERIAL');
+        constraint.push('INT IDENTITY(1,1)');
       }
 
       if (options.emitPrimaryKey) {
