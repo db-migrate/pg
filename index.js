@@ -455,7 +455,7 @@ var PgDriver = Base.extend({
       callback = null;
     }
 
-    return setNotNull.call(this);
+    return setNotNull.call(this).nodeify(callback);
 
     function setNotNull() {
       var setOrDrop = columnSpec.notNull === true ? 'SET' : 'DROP';
@@ -466,14 +466,10 @@ var PgDriver = Base.extend({
         setOrDrop
       );
 
-      return this.runSql(sql).nodeify(setUnique.bind(this));
+      return this.runSql(sql).then(setUnique.bind(this));
     }
 
-    function setUnique(err) {
-      if (err) {
-        return Promise.reject(err);
-      }
-
+    function setUnique() {
       var sql;
       var constraintName = tableName + '_' + columnName + '_key';
 
@@ -484,24 +480,20 @@ var PgDriver = Base.extend({
           constraintName,
           columnName
         );
-        return this.runSql(sql).nodeify(setDefaultValue.bind(this));
+        return this.runSql(sql).then(setDefaultValue.bind(this));
       } else if (columnSpec.unique === false) {
         sql = util.format(
           'ALTER TABLE "%s" DROP CONSTRAINT "%s"',
           tableName,
           constraintName
         );
-        return this.runSql(sql).nodeify(setDefaultValue.bind(this));
+        return this.runSql(sql).then(setDefaultValue.bind(this));
       } else {
         return setDefaultValue.call(this);
       }
     }
 
-    function setDefaultValue(err) {
-      if (err) {
-        return Promise.reject(err).nodeify(callback);
-      }
-
+    function setDefaultValue() {
       var sql;
 
       if (columnSpec.defaultValue !== undefined) {
@@ -524,9 +516,7 @@ var PgDriver = Base.extend({
           columnName
         );
       }
-      return this.runSql(sql)
-        .then(setType.bind(this))
-        .nodeify(callback);
+      return this.runSql(sql).then(setType.bind(this));
     }
 
     function setType() {
