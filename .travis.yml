@@ -30,6 +30,9 @@ cache:
   directories:
     - node_modules
 
+services:
+  - postgresql
+
 addons:
   apt:
     sources:
