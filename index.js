@@ -240,6 +240,12 @@ var PgDriver = Base.extend({
       )
       .then(
         function () {
+          // create schema if not exists
+          return this.all('SET search_path TO ' + this.schema);
+        }.bind(this)
+      )
+      .then(
+        function () {
           return this.all(
             "SELECT table_name FROM information_schema.tables WHERE table_name = '" +
               this.internals.migrationTable +
