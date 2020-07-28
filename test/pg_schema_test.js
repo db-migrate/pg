@@ -150,59 +150,121 @@ vows
       }
     }
   })
-  .addBatch({
-    'create schema and connect': {
-      topic: function() {
-        var callback = this.callback;
-        var client = new pg.Client(config);
-
-        client.connect(function(err) {
-          if (err) {
-            return callback(err);
-          }
-          client.query('CREATE SCHEMA test_schema', function(err) {
-            driver.connect(
-              config,
-              internals,
-              function(err, db) {
-                callback(err, db, client);
-              }
-            );
-          });
-        });
-      },
-
-      'migrations table': {
-        topic: function(db, client) {
+    .addBatch({
+      'create schema and connect': {
+        topic: function() {
           var callback = this.callback;
+          var client = new pg.Client(config);
 
-          db.createMigrationsTable(function() {
-            client.query(
-              "SELECT table_name FROM information_schema.tables WHERE table_schema = 'test_schema' AND table_name = 'migrations'",
-              function(err, result) {
-                callback(err, result);
-              }
-            );
+          client.connect(function(err) {
+            if (err) {
+              return callback(err);
+            }
+            client.query('CREATE SCHEMA test_schema', function(err) {
+              driver.connect(
+                  config,
+                  internals,
+                  function(err, db) {
+                    callback(err, db, client);
+                  }
+              );
+            });
           });
         },
 
-        'is in test_schema': function(err, result) {
-          assert.isNull(err);
-          assert.isNotNull(result);
-          assert.equal(result.rowCount, 1);
-        }
-      },
+        'migrations table': {
+          topic: function(db, client) {
+            var callback = this.callback;
 
-      teardown: function(db, client) {
-        var callback = this.callback;
-        client.query('DROP SCHEMA test_schema CASCADE', function(err) {
-          if (err) {
-            return callback(err);
+            db.createMigrationsTable(function() {
+              client.query(
+                  "SELECT table_name FROM information_schema.tables WHERE table_schema = 'test_schema' AND table_name = 'migrations'",
+                  function(err, result) {
+                    callback(err, result);
+                  }
+              );
+            });
+          },
+
+          'is in test_schema': function(err, result) {
+            assert.isNull(err);
+            assert.isNotNull(result);
+            assert.equal(result.rowCount, 1);
           }
-          client.end();
-          callback();
-        });
+        },
+
+        teardown: function(db, client) {
+          var callback = this.callback;
+          client.query('DROP SCHEMA test_schema CASCADE', function(err) {
+            if (err) {
+              return callback(err);
+            }
+            client.end();
+            callback();
+          });
+        }
       }
-    }
-  })
+    })
+    .addBatch({
+      'switch database': {
+        topic: function() {
+          var callback = this.callback;
+          var client = new pg.Client(config);
+
+          client.connect(function(err) {
+            if (err) {
+              return callback(err);
+            }
+
+            client.query('CREATE SCHEMA test_schema', function(err) {
+              driver.connect(
+                  config,
+                  internals,
+                  function(err, db) {
+                    client.query("CREATE SCHEMA switch_schema",
+                        function(err, result) {
+                          db.switchDatabase({schema: 'switch_schema'}, function(err) {
+                            callback(err, db, client);
+                          })
+                        }
+                    );
+                  }
+              );
+            });
+          });
+        },
+
+        'migrations table': {
+          topic: function(db, client) {
+            var callback = this.callback;
+
+            db.createMigrationsTable(function() {
+              client.query(
+                  "SELECT table_name FROM information_schema.tables WHERE table_schema = 'test_schema' AND table_name = 'migrations'",
+                  function(err, result) {
+                    callback(err, result);
+                  }
+              );
+            });
+          },
+
+          'is in test_schema': function(err, result) {
+            assert.isNull(err);
+            assert.isNotNull(result);
+            assert.equal(result.rowCount, 1);
+          }
+        },
+
+        teardown: function(db, client) {
+          var callback = this.callback;
+          client.query('DROP SCHEMA test_schema, switch_schema CASCADE', function(err) {
+            if (err) {
+              return callback(err);
+            }
+            client.end();
+            callback();
+          });
+        }
+      }
+    })
   .export(module);
