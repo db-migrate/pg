@@ -568,8 +568,8 @@ var PgDriver = Base.extend({
       this.quoteDDLArr(columns).join(', '),
       referencedTableName,
       referencedColumns.join(', '),
-      rules.onDelete || 'NO ACTION',
-      rules.onUpdate || 'NO ACTION'
+      (rules && rules.onDelete) || 'NO ACTION',
+      (rules && rules.onUpdate) || 'NO ACTION'
     );
     return this.runSql(sql).nodeify(callback);
   },
