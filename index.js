@@ -81,6 +81,8 @@ var PgDriver = Base.extend({
         return 'TIMESTAMP';
       case this.type.BLOB:
         return 'BYTEA';
+      case this.type.UUID:
+        return 'uuid';
     }
     return this._super(str);
   },
