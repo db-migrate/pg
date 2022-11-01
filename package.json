@@ -38,6 +38,6 @@
   "devDependencies": {
     "db-meta": "^0.4.1",
     "db-migrate-shared": "^1.1.2",
-    "vows": "0.8.0"
+    "vows": "0.8.3"
   }
 }
