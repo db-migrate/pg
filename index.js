@@ -700,15 +700,10 @@ Promise.promisifyAll(PgDriver);
 exports.connect = function (config, intern, callback) {
   if (config.native) {
     pg = pg.native;
-  } else if (config.ssl?.sslmode) {
-    if(config.ssl.sslrootcert) config.ssl.ca = fs.readFileSync(config.ssl.sslrootcert).toString();
-    if(config.ssl.sslcert) config.ssl.cert = fs.readFileSync(config.ssl.sslcert).toString();
-    if(config.ssl.sslkey) config.ssl.key = fs.readFileSync(config.ssl.sslkey).toString();
   }
   if (!config.database) {
     config.database = 'postgres';
   }
-
   var db = config.db || new pg.Client(config);
   db.connect(function (err) {
     if (err) {
