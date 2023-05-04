@@ -1,6 +1,6 @@
 {
   "name": "db-migrate-pg",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "A postgresql driver for db-migrate",
   "main": "index.js",
   "scripts": {
