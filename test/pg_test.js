@@ -244,6 +244,52 @@ vows
     }
   })
   .addBatch({
+    autoIncrement: {
+      topic: function () {
+        db.createTable(
+          'event',
+          {
+            id: {
+              type: dataType.BIG_INTEGER,
+              primaryKey: true,
+              autoIncrement: true
+            }
+          },
+          this.callback.bind(this)
+        );
+      },
+
+      'has column metadata': {
+        topic: function () {
+          dbmeta(
+            'pg',
+            { connection: db.connection },
+            function (err, meta) {
+              if (err) {
+                return this.callback(err);
+              }
+              meta.getColumns('event', this.callback);
+            }.bind(this)
+          );
+        },
+
+        'with auto increment column': function (err, columns) {
+          assert.isNull(err);
+          var column = findByName(columns, 'id');
+          assert.strictEqual(column.getDataType(), 'BIGINT');
+          assert.strictEqual(column.getDefaultValue(), "nextval('event_id_seq'::regclass)")
+          assert.strictEqual(column.isPrimaryKey(), true);
+          assert.strictEqual(column.isNullable(), false);
+          assert.strictEqual(column.isAutoIncrementing(), true);
+        }
+      },
+
+      teardown: function () {
+        db.dropTable('event', this.callback);
+      }
+    }
+  })
+  .addBatch({
     dropTable: {
       topic: function () {
         db.createTable(
