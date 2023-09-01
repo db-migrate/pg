@@ -1157,6 +1157,32 @@ vows
       }
     }
   })
+  .addBatch({
+    switchDatabase: {
+      topic: function () {
+        db.switchDatabase({ schema: 'test_schema2' }, this.callback);
+      },
+
+      'has search path': {
+        topic: function () {
+          db.runSql('SHOW search_path', this.callback);
+        },
+
+        'containing the new schema': function (err, result) {
+          assert.isNull(err);
+          var rows = result.rows;
+          assert.isNotNull(rows);
+          assert.strictEqual(rows.length, 1);
+          var row = rows[0];
+          assert.strictEqual(row.search_path, 'test_schema2');
+        }
+      },
+
+      teardown: function () {
+        db.switchDatabase({ schema: config.schema }, this.callback);
+      }
+    }
+  })
   .export(module);
 
 function findByName (columns, name) {

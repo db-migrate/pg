@@ -133,12 +133,18 @@ var PgDriver = Base.extend({
           'Ignore database option, not available with postgres. Use schema instead!'
         );
         this.runSql(
-          util.format('SET search_path TO `%s`', options.database),
+          util.format('SET search_path TO %s', options.database),
+          callback
+        );
+      } else if (typeof options.schema === 'string') {
+        this.schema = options.schema
+        this.runSql(
+          util.format('SET search_path TO %s', options.schema),
           callback
         );
       }
     } else if (typeof options === 'string') {
-      this.runSql(util.format('SET search_path TO `%s`', options), callback);
+      this.runSql(util.format('SET search_path TO %s', options), callback);
     } else callback(null);
   },
 
