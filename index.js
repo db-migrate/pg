@@ -3,7 +3,7 @@ var pg = require('pg');
 var semver = require('semver');
 var Base = require('db-migrate-base');
 var Promise = require('bluebird');
-var pg = require('pg');
+var fs = require('fs');
 
 var PgDriver = Base.extend({
   init: function (connection, schema, intern) {
