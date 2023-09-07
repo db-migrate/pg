@@ -137,7 +137,7 @@ var PgDriver = Base.extend({
           callback
         );
       } else if (typeof options.schema === 'string') {
-        this.schema = options.schema
+        this.schema = options.schema;
         this.runSql(
           util.format('SET search_path TO %s', options.schema),
           callback
@@ -662,6 +662,27 @@ var PgDriver = Base.extend({
     return this.allAsync(sql, [key]).then(([row]) => row);
   },
 
+  /**
+   * We use the database clock if available, to set run_on.
+   */
+  _updateKV: function (table, key, value) {
+    return this.runSql(
+      `UPDATE ${this.escapeDDL(table)} SET ${this.escapeDDL('value')} = ?,
+      ${this.escapeDDL('run_on')} = NOW()
+      WHERE ${this.escapeDDL('key')} = ?`,
+      [value, key]
+    );
+  },
+
+  _updateKVC: function (table, key, value, c, v) {
+    return this.runSql(
+      `UPDATE ${this.escapeDDL(table)} SET ${this.escapeDDL('value')} = ?,
+      ${this.escapeDDL('run_on')} = NOW()
+      WHERE ${this.escapeDDL('key')} = ? AND ${this.escapeDDL(c)} = ?`,
+      [value, key, v]
+    );
+  },
+
   all: function (...params) {
     let cb;
     if (typeof params[params.length - 1] === 'function') {
@@ -708,9 +729,9 @@ exports.connect = function (config, intern, callback) {
   if (config.native) {
     pg = pg.native;
   } else if (config.ssl?.sslmode) {
-    if(config.ssl.sslrootcert) config.ssl.ca = fs.readFileSync(config.ssl.sslrootcert).toString();
-    if(config.ssl.sslcert) config.ssl.cert = fs.readFileSync(config.ssl.sslcert).toString();
-    if(config.ssl.sslkey) config.ssl.key = fs.readFileSync(config.ssl.sslkey).toString();
+    if (config.ssl.sslrootcert) config.ssl.ca = fs.readFileSync(config.ssl.sslrootcert).toString();
+    if (config.ssl.sslcert) config.ssl.cert = fs.readFileSync(config.ssl.sslcert).toString();
+    if (config.ssl.sslkey) config.ssl.key = fs.readFileSync(config.ssl.sslkey).toString();
   }
   if (!config.database) {
     config.database = 'postgres';
