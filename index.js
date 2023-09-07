@@ -652,13 +652,18 @@ var PgDriver = Base.extend({
     ).nodeify(callback);
   },
 
+  // we case run_on to string, for dbs that may have bigger precision
+  // than miliseconds
   _getKV: function (table, key) {
     var sql =
-      'SELECT * FROM ' +
+      `SELECT ${this.escapeDDL('key')},
+        ${this.escapeDDL('value')},
+        ${this.escapeDDL('run_on')}::STRING
+        FROM ` +
       this._escapeDDL +
       table +
       this._escapeDDL +
-      ' WHERE key = $1';
+      ` WHERE ${this.escapeDDL('key')} = $1`;
     return this.allAsync(sql, [key]).then(([row]) => row);
   },
 
