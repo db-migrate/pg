@@ -683,6 +683,29 @@ var PgDriver = Base.extend({
     );
   },
 
+  _insertEntry: function (table, name) {
+    return this.runSql(
+      'INSERT INTO ' +
+        this.escapeDDL(table) +
+        ' (' +
+        this.escapeDDL('name') +
+        ', ' +
+        this.escapeDDL('run_on') +
+        ') VALUES (?, NOW())',
+      [name]
+    );
+  },
+
+  _insertKV: function (table, key, value) {
+    return this.runSql(
+      `INSERT INTO ${this.escapeDDL(table)}
+        (${this.escapeDDL('key')}, ${this.escapeDDL('value')}, ${this.escapeDDL(
+        'run_on'
+      )}) VALUES (?, ?, NOW())`,
+      [key, value]
+    );
+  },
+
   all: function (...params) {
     let cb;
     if (typeof params[params.length - 1] === 'function') {
