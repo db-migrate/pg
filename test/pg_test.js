@@ -705,202 +705,176 @@ lab.experiment('pg', () => {
     });
   });
 
+lab.experiment('addForeignKey', () => {
+    let rows;
+
+    lab.before(async () => {
+      await db.createTable('event_type', {
+        id: {
+          type: dataType.INTEGER,
+          primaryKey: true,
+          autoIncrement: true
+        },
+        title: { type: dataType.STRING }
+      });
+      await db.createTable('event', {
+        id: {
+          type: dataType.INTEGER,
+          primaryKey: true,
+          autoIncrement: true
+        },
+        event_id: {
+          type: dataType.INTEGER,
+          notNull: true
+        },
+        title: {
+          type: dataType.STRING
+        }
+      });
+      await db.addForeignKey(
+        'event',
+        'event_type',
+        'fk_event_event_type',
+        {
+          event_id: 'id'
+        },
+        {
+          onDelete: 'CASCADE'
+        }
+      );
+
+      var metaQuery = [
+             'SELECT',
+             ' tc.table_schema, tc.table_name as ortn, kcu.column_name orcn, ccu.table_name,',
+             '  ccu.column_name,',
+             '  cstr.update_rule,',
+             '  cstr.delete_rule',
+             'FROM',
+             '  information_schema.table_constraints AS tc',
+             'JOIN information_schema.key_column_usage AS kcu',
+             '  ON tc.constraint_name = kcu.constraint_name',
+             'JOIN information_schema.constraint_column_usage AS ccu',
+             '  ON ccu.constraint_name = tc.constraint_name',
+             'JOIN information_schema.referential_constraints AS cstr',
+             '  ON cstr.constraint_schema = tc.table_schema',
+             '    AND cstr.constraint_name = tc.constraint_name',
+             'WHERE',
+             '  tc.table_schema = ?',
+             '  AND tc.table_name = ?',
+             '  AND kcu.column_name = ?'
+           ].join('\n');
+       ({rows} = await db.runSql(metaQuery, ['public', 'event', 'event_id']));
+    });
+
+   
+
+
+    lab.after(async () => {
+      await db.dropTable('event');
+      await db.dropTable('event_type');
+    });
+
+
+    lab.experiment('sets usage and constraints', () => {
+      lab.test('with correct references', () => {
+        expect(rows).to.exist();
+        expect(rows.length).to.equal(1);
+        const row = rows[0];
+         expect(row.table_name).to.shallow.equal('event_type');
+           expect(row.column_name).to.shallow.equal('id');
+      });
+
+      lab.test('and correct rules', () => {
+        expect(rows).to.exist();
+        expect(rows.length).to.equal(1);
+        const row = rows[0];
+           expect(row.update_rule).to.shallow.equal('NO ACTION');
+           expect(row.delete_rule).to.shallow.equal('CASCADE');
+      });
+    });
+  });
+
+lab.experiment('removeForeignKey', () => {
+    let rows;
+
+    lab.before(async () => {
+      await db.createTable('event_type', {
+        id: {
+          type: dataType.INTEGER,
+          primaryKey: true,
+          autoIncrement: true
+        },
+        title: { type: dataType.STRING }
+      });
+      await db.createTable('event', {
+        id: {
+          type: dataType.INTEGER,
+          primaryKey: true,
+          autoIncrement: true
+        },
+        event_id: {
+          type: dataType.INTEGER,
+          notNull: true
+        },
+        title: {
+          type: dataType.STRING
+        }
+      });
+      await db.addForeignKey(
+        'event',
+        'event_type',
+        'fk_event_event_type',
+        {
+          event_id: 'id'
+        },
+        {
+          onDelete: 'CASCADE'
+        }
+      );
+      await db.removeForeignKey('event', 'fk_event_event_type');
+
+      var metaQuery = [
+             'SELECT',
+             ' tc.table_schema, tc.table_name as ortn, kcu.column_name orcn, ccu.table_name,',
+             '  ccu.column_name,',
+             '  cstr.update_rule,',
+             '  cstr.delete_rule',
+             'FROM',
+             '  information_schema.table_constraints AS tc',
+             'JOIN information_schema.key_column_usage AS kcu',
+             '  ON tc.constraint_name = kcu.constraint_name',
+             'JOIN information_schema.constraint_column_usage AS ccu',
+             '  ON ccu.constraint_name = tc.constraint_name',
+             'JOIN information_schema.referential_constraints AS cstr',
+             '  ON cstr.constraint_schema = tc.table_schema',
+             '    AND cstr.constraint_name = tc.constraint_name',
+             'WHERE',
+             '  tc.table_schema = ?',
+             '  AND tc.table_name = ?',
+             '  AND kcu.column_name = ?'
+           ].join('\n');
+      ({rows} = await db.runSql(metaQuery, ['public', 'event', 'event_id']));
+    });
+  
+
+    lab.after(async () => {
+      await db.dropTable('event');
+      await db.dropTable('event_type');
+    });
+
+    lab.experiment('sets usage and constraints', () => {
+      lab.test('removes usage and constraints', () => {
+        expect(rows).to.exist();
+        expect(rows.length).to.equal(0);
+      });
+    });
+  });
+
   lab.after(() => db.close())
 })
 
 
-//   .addBatch({
-//     addForeignKey: {
-//       topic: function () {
-//         db.createTable(
-//           'event',
-//           {
-//             id: {
-//               type: dataType.INTEGER,
-//               primaryKey: true,
-//               autoIncrement: true
-//             },
-//             event_id: { type: dataType.INTEGER, notNull: true },
-//             title: { type: dataType.STRING }
-//           },
-//           function () {
-//             db.createTable(
-//               'event_type',
-//               {
-//                 id: {
-//                   type: dataType.INTEGER,
-//                   primaryKey: true,
-//                   autoIncrement: true
-//                 },
-//                 title: { type: dataType.STRING }
-//               },
-//               function () {
-//                 // lowercase table names because they are quoted in the function
-//                 // and pg uses lowercase internally
-//                 db.addForeignKey(
-//                   'event',
-//                   'event_type',
-//                   'fk_event_event_type',
-//                   {
-//                     event_id: 'id'
-//                   },
-//                   {
-//                     onDelete: 'CASCADE'
-//                   },
-//                   this.callback
-//                 );
-//               }.bind(this)
-//             );
-//           }.bind(this)
-//         );
-//       },
-// 
-//       'sets usage and constraints': {
-//         topic: function () {
-//           var metaQuery = [
-//             'SELECT',
-//             ' tc.table_schema, tc.table_name as ortn, kcu.column_name orcn, ccu.table_name,',
-//             '  ccu.column_name,',
-//             '  cstr.update_rule,',
-//             '  cstr.delete_rule',
-//             'FROM',
-//             '  information_schema.table_constraints AS tc',
-//             'JOIN information_schema.key_column_usage AS kcu',
-//             '  ON tc.constraint_name = kcu.constraint_name',
-//             'JOIN information_schema.constraint_column_usage AS ccu',
-//             '  ON ccu.constraint_name = tc.constraint_name',
-//             'JOIN information_schema.referential_constraints AS cstr',
-//             '  ON cstr.constraint_schema = tc.table_schema',
-//             '    AND cstr.constraint_name = tc.constraint_name',
-//             'WHERE',
-//             '  tc.table_schema = ?',
-//             '  AND tc.table_name = ?',
-//             '  AND kcu.column_name = ?'
-//           ].join('\n');
-//           db.runSql(metaQuery, ['public', 'event', 'event_id'], this.callback);
-//         },
-// 
-//         'with correct references': function (err, result) {
-//           expect(err).to.not.exist();
-//           var rows = result.rows;
-//           expect(rows).to.exist();
-//           expect(rows.length).to.shallow.equal(1);
-//           var row = rows[0];
-//           expect(row.table_name).to.shallow.equal('event_type');
-//           expect(row.column_name).to.shallow.equal('id');
-//         },
-// 
-//         'and correct rules': function (err, result) {
-//           expect(err).to.not.exist();
-//           var rows = result.rows;
-//           expect(rows).to.exist();
-//           expect(rows.length).to.shallow.equal(1);
-//           var row = rows[0];
-//           expect(row.update_rule).to.shallow.equal('NO ACTION');
-//           expect(row.delete_rule).to.shallow.equal('CASCADE');
-//         }
-//       },
-// 
-//       teardown: function () {
-//         db.dropTable('event')
-//           .then(function () {
-//             return db.dropTable('event_type');
-//           })
-//           .nodeify(this.callback);
-//       }
-//     }
-//   })
-//   .addBatch({
-//     removeForeignKey: {
-//       topic: function () {
-//         db.createTable(
-//           'event',
-//           {
-//             id: {
-//               type: dataType.INTEGER,
-//               primaryKey: true,
-//               autoIncrement: true
-//             },
-//             event_id: { type: dataType.INTEGER, notNull: true },
-//             title: { type: dataType.STRING }
-//           },
-//           function () {
-//             db.createTable(
-//               'event_type',
-//               {
-//                 id: {
-//                   type: dataType.INTEGER,
-//                   primaryKey: true,
-//                   autoIncrement: true
-//                 },
-//                 title: { type: dataType.STRING }
-//               },
-//               function () {
-//                 db.addForeignKey(
-//                   'event',
-//                   'event_type',
-//                   'fk_event_event_type',
-//                   {
-//                     event_id: 'id'
-//                   },
-//                   {
-//                     onDelete: 'CASCADE'
-//                   },
-//                   function () {
-//                     db.removeForeignKey(
-//                       'event',
-//                       'fk_event_event_type',
-//                       this.callback.bind(this, null)
-//                     );
-//                   }.bind(this)
-//                 );
-//               }.bind(this)
-//             );
-//           }.bind(this)
-//         );
-//       },
-// 
-//       teardown: function () {
-//         db.dropTable('event')
-//           .then(function () {
-//             return db.dropTable('event_type');
-//           })
-//           .nodeify(this.callback);
-//       },
-// 
-//       'removes usage and constraints': {
-//         topic: function () {
-//           var metaQuery = [
-//             'SELECT',
-//             ' tc.table_schema, tc.table_name as ortn, kcu.column_name orcn, ccu.table_name,',
-//             '  ccu.column_name,',
-//             '  cstr.update_rule,',
-//             '  cstr.delete_rule',
-//             'FROM',
-//             '  information_schema.table_constraints AS tc',
-//             'JOIN information_schema.key_column_usage AS kcu',
-//             '  ON tc.constraint_name = kcu.constraint_name',
-//             'JOIN information_schema.constraint_column_usage AS ccu',
-//             '  ON ccu.constraint_name = tc.constraint_name',
-//             'JOIN information_schema.referential_constraints AS cstr',
-//             '  ON cstr.constraint_schema = tc.table_schema',
-//             '    AND cstr.constraint_name = tc.constraint_name',
-//             'WHERE',
-//             '  tc.table_schema = ?',
-//             '  AND tc.table_name = ?',
-//             '  AND kcu.column_name = ?'
-//           ].join('\n');
-//           db.runSql(metaQuery, ['public', 'event', 'event_id'], this.callback);
-//         },
-// 
-//         completely: function (err, result) {
-//           expect(err).to.not.exist();
-//           expect(result.rows).to.exist();
-//           expect(result.rows.length).to.shallow.equal(0);
-//         }
-//       }
-//     }
-//   })
+
 //   .addBatch({
 //     insert: {
 //       topic: function () {
