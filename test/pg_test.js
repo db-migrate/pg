@@ -936,10 +936,22 @@ lab.experiment('pg', () => {
     lab.after(() => db.switchDatabase({ schema: config.schema }));
   });
 
+  lab.experiment('createDatabase', () => {
+    let rows;
+
+    lab.before(async () => {
+      await db.createDatabase('test');
+    });
+
+    lab.test('create already existing db with ifNotExist flag', async () => {
+      await db.createDatabase('test', { ifNotExists: true });
+    });
+
+    lab.after(() => db.dropDatabase('test'));
+  });
+
   lab.after(() => db.close());
 });
-
-//   .export(module);
 
 function findByName (columns, name) {
   for (let i = 0; i < columns.length; i++) {
