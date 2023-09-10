@@ -58,338 +58,273 @@ lab.experiment('pg', () => {
   })
 
   lab.experiment('createTable', () => {
-      let tables;
-      
+    let tables;
+
     lab.before(async () => {
-        await db.createTable(
-           'event',
-           {
-             id: {
-               type: dataType.INTEGER,
-               primaryKey: true,
-               autoIncrement: true
-             },
-             str: { type: dataType.STRING, unique: true },
-             txt: { type: dataType.TEXT, notNull: true, defaultValue: 'foo' },
-             chr: dataType.CHAR,
-             intg: dataType.INTEGER,
-             rel: dataType.REAL,
-             smalint: dataType.SMALLINT,
-             dt: dataType.DATE,
-             dti: dataType.DATE_TIME,
-             dti_tz: { type: dataType.DATE_TIME, timezone: true },
-             bl: dataType.BOOLEAN,
-             raw: {
-               type: 'TIMESTAMP',
-               defaultValue: {
-                 raw: 'CURRENT_TIMESTAMP'
-               }
-             },
-             special: {
-               type: 'TIMESTAMP',
-               defaultValue: {
-                 special: 'CURRENT_TIMESTAMP'
-               }
-             }
-           },
-         );
-          tables = await meta.getTablesAsync();
-       });
- 
-      lab.test('has table metadata containing the event table', async () => {
-           expect(tables.length).to.shallow.equal(1);
-           expect(tables[0].getName()).to.shallow.equal('event');
-         })
- 
-      lab.experiment('has column metadata for the event table', () => {
+      await db.createTable(
+        'event',
+        {
+          id: {
+            type: dataType.INTEGER,
+            primaryKey: true,
+            autoIncrement: true
+          },
+          str: { type: dataType.STRING, unique: true },
+          txt: { type: dataType.TEXT, notNull: true, defaultValue: 'foo' },
+          chr: dataType.CHAR,
+          intg: dataType.INTEGER,
+          rel: dataType.REAL,
+          smalint: dataType.SMALLINT,
+          dt: dataType.DATE,
+          dti: dataType.DATE_TIME,
+          dti_tz: { type: dataType.DATE_TIME, timezone: true },
+          bl: dataType.BOOLEAN,
+          raw: {
+            type: 'TIMESTAMP',
+            defaultValue: {
+              raw: 'CURRENT_TIMESTAMP'
+            }
+          },
+          special: {
+            type: 'TIMESTAMP',
+            defaultValue: {
+              special: 'CURRENT_TIMESTAMP'
+            }
+          }
+        },
+      );
+      tables = await meta.getTablesAsync();
+    });
+
+    lab.test('has table metadata containing the event table', async () => {
+      expect(tables.length).to.shallow.equal(1);
+      expect(tables[0].getName()).to.shallow.equal('event');
+    })
+
+    lab.experiment('has column metadata for the event table', () => {
       let columns;
       lab.before(async () => (columns = await meta.getColumnsAsync('event')));
- 
-        lab.test('with 13 columns', async () => {
-           expect(columns).to.exist();
-           expect(columns.length).to.shallow.equal(13);
-         });
- 
-          lab.test('that has integer id column that is primary key, non-nullable, and auto increments', async () => {
-           const column = findByName(columns, 'id');
-           expect(column.getDataType()).to.shallow.equal('INTEGER');
-           expect(column.isPrimaryKey()).to.shallow.equal(true);
-           expect(column.isNullable()).to.shallow.equal(false);
-           expect(column.isAutoIncrementing()).to.shallow.equal(true);
-         });
- 
-        lab.test('that has text str column that is unique', async () => {
-           const column = findByName(columns, 'str');
-           expect(column.getDataType()).to.shallow.equal('CHARACTER VARYING');
-           expect(column.isUnique()).to.shallow.equal(true);
-         })
- 
-          lab.test('that has text txt column that is non-nullable', async () => {
-           const column = findByName(columns, 'txt');
-           expect(column.getDataType()).to.shallow.equal('TEXT');
-           expect(column.isNullable()).to.shallow.equal(false);
-           // expect(column.getDefaultValue()).to.shallow.equal('foo');
-         })
- 
-          lab.test('that has integer intg column', async () => {
-           const column = findByName(columns, 'intg');
-           expect(column.getDataType()).to.shallow.equal('INTEGER');
-           expect(column.isNullable()).to.shallow.equal(true);
-         })
- 
-          lab.test('that has real rel column', async () => {
-           const column = findByName(columns, 'rel');
-           expect(column.getDataType()).to.shallow.equal('REAL');
-           expect(column.isNullable()).to.shallow.equal(true);
-         })
- 
-          lab.test('that has integer dt column', async () => {
-           const column = findByName(columns, 'dt');
-           expect(column.getDataType()).to.shallow.equal('DATE');
-           expect(column.isNullable()).to.shallow.equal(true);
-         })
- 
-          lab.test('that has integer dti column', async () => {
-           const column = findByName(columns, 'dti');
-           expect(
-             column.getDataType()).to.shallow.equal('TIMESTAMP WITHOUT TIME ZONE'
-           );
-           expect(column.isNullable()).to.shallow.equal(true);
-         })
- 
-          lab.test('that has timestamp with time zone column', async () => {
-           const column = findByName(columns, 'dti_tz');
-           expect(column.getDataType()).to.shallow.equal('TIMESTAMP WITH TIME ZONE');
-           expect(column.isNullable()).to.shallow.equal(true);
-         })
- 
-          lab.test('that has boolean bl column', async () => {
-           const column = findByName(columns, 'bl');
-           expect(column.getDataType()).to.shallow.equal('BOOLEAN');
-           expect(column.isNullable()).to.shallow.equal(true);
-         })
- 
-          lab.test('that has character chr column', async () => {
-           const column = findByName(columns, 'chr');
-           expect(column.getDataType()).to.shallow.equal('CHARACTER');
-           expect(column.isNullable()).to.shallow.equal(true);
-         })
- 
-          lab.test('that has small integer smalint column', async () => {
-           const column = findByName(columns, 'smalint');
-           expect(column.getDataType()).to.shallow.equal('SMALLINT');
-           expect(column.isNullable()).to.shallow.equal(true);
-         })
- 
-          lab.test('that has raw column', async () => {
-           const column = findByName(columns, 'raw');
-           expect(column.getDefaultValue()).to.shallow.equal('CURRENT_TIMESTAMP');
-         })
- 
-          lab.test('that has special CURRENT_TIMESTAMP column', async () => {
-           const column = findByName(columns, 'special');
-           expect(column.getDefaultValue()).to.shallow.equal('CURRENT_TIMESTAMP');
-         })
-       })
- 
+
+      lab.test('with 13 columns', async () => {
+        expect(columns).to.exist();
+        expect(columns.length).to.shallow.equal(13);
+      });
+
+      lab.test('that has integer id column that is primary key, non-nullable, and auto increments', async () => {
+        const column = findByName(columns, 'id');
+        expect(column.getDataType()).to.shallow.equal('INTEGER');
+        expect(column.isPrimaryKey()).to.shallow.equal(true);
+        expect(column.isNullable()).to.shallow.equal(false);
+        expect(column.isAutoIncrementing()).to.shallow.equal(true);
+      });
+
+      lab.test('that has text str column that is unique', async () => {
+        const column = findByName(columns, 'str');
+        expect(column.getDataType()).to.shallow.equal('CHARACTER VARYING');
+        expect(column.isUnique()).to.shallow.equal(true);
+      })
+
+      lab.test('that has text txt column that is non-nullable', async () => {
+        const column = findByName(columns, 'txt');
+        expect(column.getDataType()).to.shallow.equal('TEXT');
+        expect(column.isNullable()).to.shallow.equal(false);
+        // expect(column.getDefaultValue()).to.shallow.equal('foo');
+      })
+
+      lab.test('that has integer intg column', async () => {
+        const column = findByName(columns, 'intg');
+        expect(column.getDataType()).to.shallow.equal('INTEGER');
+        expect(column.isNullable()).to.shallow.equal(true);
+      })
+
+      lab.test('that has real rel column', async () => {
+        const column = findByName(columns, 'rel');
+        expect(column.getDataType()).to.shallow.equal('REAL');
+        expect(column.isNullable()).to.shallow.equal(true);
+      })
+
+      lab.test('that has integer dt column', async () => {
+        const column = findByName(columns, 'dt');
+        expect(column.getDataType()).to.shallow.equal('DATE');
+        expect(column.isNullable()).to.shallow.equal(true);
+      })
+
+      lab.test('that has integer dti column', async () => {
+        const column = findByName(columns, 'dti');
+        expect(
+          column.getDataType()).to.shallow.equal('TIMESTAMP WITHOUT TIME ZONE'
+          );
+        expect(column.isNullable()).to.shallow.equal(true);
+      })
+
+      lab.test('that has timestamp with time zone column', async () => {
+        const column = findByName(columns, 'dti_tz');
+        expect(column.getDataType()).to.shallow.equal('TIMESTAMP WITH TIME ZONE');
+        expect(column.isNullable()).to.shallow.equal(true);
+      })
+
+      lab.test('that has boolean bl column', async () => {
+        const column = findByName(columns, 'bl');
+        expect(column.getDataType()).to.shallow.equal('BOOLEAN');
+        expect(column.isNullable()).to.shallow.equal(true);
+      })
+
+      lab.test('that has character chr column', async () => {
+        const column = findByName(columns, 'chr');
+        expect(column.getDataType()).to.shallow.equal('CHARACTER');
+        expect(column.isNullable()).to.shallow.equal(true);
+      })
+
+      lab.test('that has small integer smalint column', async () => {
+        const column = findByName(columns, 'smalint');
+        expect(column.getDataType()).to.shallow.equal('SMALLINT');
+        expect(column.isNullable()).to.shallow.equal(true);
+      })
+
+      lab.test('that has raw column', async () => {
+        const column = findByName(columns, 'raw');
+        expect(column.getDefaultValue()).to.shallow.equal('CURRENT_TIMESTAMP');
+      })
+
+      lab.test('that has special CURRENT_TIMESTAMP column', async () => {
+        const column = findByName(columns, 'special');
+        expect(column.getDefaultValue()).to.shallow.equal('CURRENT_TIMESTAMP');
+      })
+    })
+
     lab.after(() => db.dropTable('event'));
-    
-   })
+
+  })
+
+  lab.experiment('autoIncrement',() => {
+    let columns;
+
+
+    lab.before(async () => {
+
+      await db.createTable(
+        'event',
+        {
+          id: {
+            type: dataType.BIG_INTEGER,
+            primaryKey: true,
+            autoIncrement: true
+          }
+        },
+      )
+
+      columns = await meta.getColumnsAsync('event')
+    });
+
+    lab.test('has column metadata with auto increment column', async () => {
+      const column = findByName(columns, 'id');
+      expect(column.getDataType()).to.shallow.equal('BIGINT');
+      expect(column.getDefaultValue()).to.shallow.equal("nextval('event_id_seq'::regclass)")
+      expect(column.isPrimaryKey()).to.shallow.equal(true);
+      expect(column.isNullable()).to.shallow.equal(false);
+      expect(column.isAutoIncrementing()).to.shallow.equal(true);
+    })
+
+
+    lab.after(() => db.dropTable('event'));
+  })
+
+
+  lab.experiment('dropTable', () => {
+    let tables;
+    lab.before(async () => {
+      await db.createTable('event', {
+        id: {
+          type: dataType.INTEGER,
+          primaryKey: true,
+          autoIncrement: true
+        }
+      });
+      await db.dropTable('event');
+      tables = await meta.getTablesAsync();
+    });
+
+    lab.test('has table metadata containing no tables', async () => {
+      expect(tables).to.exist();
+      expect(tables.length).to.shallow.equal(0);
+    })
+  })
+
+lab.experiment('renameTable', () => {
+    let tables;
+
+    lab.before(async () => {
+      await db.createTable('event', {
+        id: {
+          type: dataType.INTEGER,
+          primaryKey: true,
+          autoIncrement: true
+        }
+      });
+      await db.renameTable('event', 'functions');
+      tables = await meta.getTablesAsync();
+    });
+
+    lab.after(() => db.dropTable('functions'));
+
+    lab.test('was executed successfully', () => {
+      expect(tables).to.exist();
+      expect(tables.length).to.equal(1);
+      expect(tables[0].getName()).to.equal('functions');
+    });
+  });
+
+lab.experiment('addColumn', () => {
+    let columns;
+
+    lab.before(async () => {
+      await db.createTable('event', {
+        title: {
+          type: dataType.STRING
+        }
+      });
+      await db.addColumn('event', 'date', {
+        after: 'title',
+        type: 'datetime'
+      });
+      await db.addColumn('event', 'id', {
+        type: dataType.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+      });
+      columns = await meta.getColumnsAsync('event');
+    });
+
+   
+
+    lab.after(() => db.dropTable('event'));
+
+    lab.test('with additional title column', () => {
+      expect(columns).to.exist();
+      expect(columns.length).to.shallow.equal(3);
+      const column = findByName(columns, 'title');
+      expect(column.getName()).to.shallow.equal('title');
+      expect(column.getDataType()).to.shallow.equal('CHARACTER VARYING');
+
+
+      // Testing the "after" constraint
+      // mysql > 8 does not return the same way anymore,
+      // results may be in random order, so we check explicitly
+      // the element with ordinal position 2
+      expect(
+        columns.find((x) => x.meta.ordinal_position === 2).getName()
+      ).to.equal('date');
+    });
+  });
 
   lab.after(() => db.close())
 })
 
 
-//   .addBatch({
-//     autoIncrement: {
-//       topic: function () {
-//         db.createTable(
-//           'event',
-//           {
-//             id: {
-//               type: dataType.BIG_INTEGER,
-//               primaryKey: true,
-//               autoIncrement: true
-//             }
-//           },
-//           this.callback.bind(this)
-//         );
-//       },
-// 
-//       'has column metadata': {
-//         topic: function () {
-//           dbmeta(
-//             'pg',
-//             { connection: db.connection },
-//             function (err, meta) {
-//               if (err) {
-//                 return this.callback(err);
-//               }
-//               meta.getColumns('event', this.callback);
-//             }.bind(this)
-//           );
-//         },
-// 
-//         'with auto increment column': function (err, columns) {
-//           expect(err).to.not.exist();
-//           const column = findByName(columns, 'id');
-//           expect(column.getDataType()).to.shallow.equal('BIGINT');
-//           expect(column.getDefaultValue()).to.shallow.equal("nextval('event_id_seq'::regclass)")
-//           expect(column.isPrimaryKey()).to.shallow.equal(true);
-//           expect(column.isNullable()).to.shallow.equal(false);
-//           expect(column.isAutoIncrementing()).to.shallow.equal(true);
-//         }
-//       },
-// 
-//       teardown: function () {
-//         db.dropTable('event', this.callback);
-//       }
-//     }
-//   })
-//   .addBatch({
-//     dropTable: {
-//       topic: function () {
-//         db.createTable(
-//           'event',
-//           {
-//             id: {
-//               type: dataType.INTEGER,
-//               primaryKey: true,
-//               autoIncrement: true
-//             }
-//           },
-//           function (err) {
-//             if (err) {
-//               return this.callback(err);
-//             }
-//             db.dropTable('event', this.callback.bind(this, null));
-//           }.bind(this)
-//         );
-//       },
-// 
-//       'has table metadata': {
-//         topic: function () {
-//           dbmeta(
-//             'pg',
-//             { connection: db.connection },
-//             function (err, meta) {
-//               if (err) {
-//                 return this.callback(err);
-//               }
-//               meta.getTables(this.callback);
-//             }.bind(this)
-//           );
-//         },
-// 
-//         'containing no tables': function (err, tables) {
-//           expect(err).to.not.exist();
-//           expect(tables).to.exist();
-//           expect(tables.length).to.shallow.equal(0);
-//         }
-//       }
-//     }
-//   })
-//   .addBatch({
-//     renameTable: {
-//       topic: function () {
-//         db.createTable(
-//           'event',
-//           {
-//             id: {
-//               type: dataType.INTEGER,
-//               primaryKey: true,
-//               autoIncrement: true
-//             }
-//           },
-//           function () {
-//             db.renameTable(
-//               'event',
-//               'functions',
-//               this.callback.bind(this, null)
-//             );
-//           }.bind(this)
-//         );
-//       },
-// 
-//       'has table metadata': {
-//         topic: function () {
-//           dbmeta(
-//             'pg',
-//             { connection: db.connection },
-//             function (err, meta) {
-//               if (err) {
-//                 return this.callback(err);
-//               }
-//               meta.getTables(this.callback);
-//             }.bind(this)
-//           );
-//         },
-// 
-//         'containing the functions table': function (err, tables) {
-//           expect(err).to.not.exist();
-//           expect(tables).to.exist();
-//           expect(tables.length).to.shallow.equal(1);
-//           expect(tables[0].getName()).to.shallow.equal('functions');
-//         }
-//       },
-// 
-//       teardown: function () {
-//         db.dropTable('functions', this.callback);
-//       }
-//     }
-//   })
-//   .addBatch({
-//     addColumn: {
-//       topic: function () {
-//         db.createTable(
-//           'event',
-//           {
-//             id: {
-//               type: dataType.INTEGER,
-//               primaryKey: true,
-//               autoIncrement: true
-//             }
-//           },
-//           function () {
-//             db.addColumn(
-//               'event',
-//               'title',
-//               'string',
-//               this.callback.bind(this, null)
-//             );
-//           }.bind(this)
-//         );
-//       },
-// 
-//       'has column metadata': {
-//         topic: function () {
-//           dbmeta(
-//             'pg',
-//             { connection: db.connection },
-//             function (err, meta) {
-//               if (err) {
-//                 return this.callback(err);
-//               }
-//               meta.getColumns('event', this.callback);
-//             }.bind(this)
-//           );
-//         },
-// 
-//         'with additional title column': function (err, columns) {
-//           expect(err).to.not.exist();
-//           expect(columns).to.exist();
-//           expect(columns.length).to.shallow.equal(2);
-//           const column = findByName(columns, 'title');
-//           expect(column.getName()).to.shallow.equal('title');
-//           expect(column.getDataType()).to.shallow.equal('CHARACTER VARYING');
-//         }
-//       },
-// 
-//       teardown: function () {
-//         db.dropTable('event', this.callback);
-//       }
-//     }
-//   })
+
+
+
+
 //   .addBatch({
 //     removeColumn: {
 //       topic: function () {
