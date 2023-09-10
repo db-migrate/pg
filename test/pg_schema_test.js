@@ -56,7 +56,7 @@ vows
             client.query(
               "SELECT table_name FROM information_schema.tables WHERE table_schema = 'test_schema' AND table_name = 'migrations'",
               function(err, result) {
-                callback(err, result);
+                callback(err, result, client);
               }
             );
           });
@@ -119,7 +119,7 @@ vows
             client.query(
               "SELECT table_name FROM information_schema.tables WHERE table_schema = 'test_schema' AND table_name = 'migrations'",
               function(err, result) {
-                callback(err, result);
+                callback(err, result, client);
               }
             );
           });
