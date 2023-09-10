@@ -4,7 +4,8 @@
   "description": "A postgresql driver for db-migrate",
   "main": "index.js",
   "scripts": {
-    "test": "node node_modules/.bin/vows"
+    "pretest": "eslint index.js",
+    "test": "lab -t 60"
   },
   "repository": {
     "type": "git",
@@ -45,8 +46,7 @@
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.3.1",
-    "eslint-plugin-standard": "^4.1.0",
-    "vows": "0.8.0"
+    "eslint-plugin-standard": "^4.1.0"
   },
   "overrides": {
     "graceful-fs": "^4.2.11"
