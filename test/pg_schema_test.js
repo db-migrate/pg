@@ -1,3 +1,9 @@
+const Code = require('@hapi/code');
+const Lab = require('@hapi/lab');
+
+const { expect } = Code;
+const lab = (exports.lab = Lab.script());
+
 var vows = require('vows');
 var Promise = require('bluebird');
 var assert = require('assert');
