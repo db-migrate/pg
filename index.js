@@ -347,7 +347,7 @@ var PgDriver = Base.extend({
 
     if (spec.primaryKey) {
       if (spec.autoIncrement) {
-        constraint.push('SERIAL');
+        constraint.push(spec.type === this.type.BIGINT ? 'BIGSERIAL' : 'SERIAL');
       }
 
       if (options.emitPrimaryKey) {
