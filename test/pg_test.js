@@ -1,22 +1,20 @@
-
 const Code = require('@hapi/code');
 const Lab = require('@hapi/lab');
 
 const { expect } = Code;
 const lab = (exports.lab = Lab.script());
-var util = require('util');
-var dbmeta = require('db-meta');
-var dataType = require('db-migrate-shared').dataType;
-const Promise = require('bluebird')
-var driver = require('../');
-var log = require('db-migrate-shared').log;
-
+const util = require('util');
+let dbmeta = require('db-meta');
+const dataType = require('db-migrate-shared').dataType;
+const Promise = require('bluebird');
+const driver = require('../');
+const log = require('db-migrate-shared').log;
 
 dbmeta = Promise.promisify(dbmeta);
 
-var config = require('./db.config.json').pg;
+const config = require('./db.config.json').pg;
 
-var internals = {};
+const internals = {};
 internals.mod = {
   log: log,
   type: dataType
@@ -28,8 +26,6 @@ internals.interfaces = {
 internals.migrationTable = 'migrations';
 log.silence(true);
 
-
-const dbName = config.database;
 let db;
 let meta;
 
@@ -45,17 +41,17 @@ lab.experiment('pg', () => {
   });
 
   lab.experiment('connections', () => {
-    let con
+    let con;
 
     lab.test('default connection', async () => {
-      con = await Promise.promisify(driver.connect)(config, internals)
+      con = await Promise.promisify(driver.connect)(config, internals);
       expect(con).to.exist();
-    })
+    });
 
     lab.afterEach(async () => {
       con.close();
-    })
-  })
+    });
+  });
 
   lab.experiment('createTable', () => {
     let tables;
@@ -91,7 +87,7 @@ lab.experiment('pg', () => {
               special: 'CURRENT_TIMESTAMP'
             }
           }
-        },
+        }
       );
       tables = await meta.getTablesAsync();
     });
@@ -99,7 +95,7 @@ lab.experiment('pg', () => {
     lab.test('has table metadata containing the event table', async () => {
       expect(tables.length).to.shallow.equal(1);
       expect(tables[0].getName()).to.shallow.equal('event');
-    })
+    });
 
     lab.experiment('has column metadata for the event table', () => {
       let columns;
@@ -122,86 +118,83 @@ lab.experiment('pg', () => {
         const column = findByName(columns, 'str');
         expect(column.getDataType()).to.shallow.equal('CHARACTER VARYING');
         expect(column.isUnique()).to.shallow.equal(true);
-      })
+      });
 
       lab.test('that has text txt column that is non-nullable', async () => {
         const column = findByName(columns, 'txt');
         expect(column.getDataType()).to.shallow.equal('TEXT');
         expect(column.isNullable()).to.shallow.equal(false);
         // expect(column.getDefaultValue()).to.shallow.equal('foo');
-      })
+      });
 
       lab.test('that has integer intg column', async () => {
         const column = findByName(columns, 'intg');
         expect(column.getDataType()).to.shallow.equal('INTEGER');
         expect(column.isNullable()).to.shallow.equal(true);
-      })
+      });
 
       lab.test('that has real rel column', async () => {
         const column = findByName(columns, 'rel');
         expect(column.getDataType()).to.shallow.equal('REAL');
         expect(column.isNullable()).to.shallow.equal(true);
-      })
+      });
 
       lab.test('that has integer dt column', async () => {
         const column = findByName(columns, 'dt');
         expect(column.getDataType()).to.shallow.equal('DATE');
         expect(column.isNullable()).to.shallow.equal(true);
-      })
+      });
 
       lab.test('that has integer dti column', async () => {
         const column = findByName(columns, 'dti');
         expect(
           column.getDataType()).to.shallow.equal('TIMESTAMP WITHOUT TIME ZONE'
-          );
+        );
         expect(column.isNullable()).to.shallow.equal(true);
-      })
+      });
 
       lab.test('that has timestamp with time zone column', async () => {
         const column = findByName(columns, 'dti_tz');
         expect(column.getDataType()).to.shallow.equal('TIMESTAMP WITH TIME ZONE');
         expect(column.isNullable()).to.shallow.equal(true);
-      })
+      });
 
       lab.test('that has boolean bl column', async () => {
         const column = findByName(columns, 'bl');
         expect(column.getDataType()).to.shallow.equal('BOOLEAN');
         expect(column.isNullable()).to.shallow.equal(true);
-      })
+      });
 
       lab.test('that has character chr column', async () => {
         const column = findByName(columns, 'chr');
         expect(column.getDataType()).to.shallow.equal('CHARACTER');
         expect(column.isNullable()).to.shallow.equal(true);
-      })
+      });
 
       lab.test('that has small integer smalint column', async () => {
         const column = findByName(columns, 'smalint');
         expect(column.getDataType()).to.shallow.equal('SMALLINT');
         expect(column.isNullable()).to.shallow.equal(true);
-      })
+      });
 
       lab.test('that has raw column', async () => {
         const column = findByName(columns, 'raw');
         expect(column.getDefaultValue()).to.shallow.equal('CURRENT_TIMESTAMP');
-      })
+      });
 
       lab.test('that has special CURRENT_TIMESTAMP column', async () => {
         const column = findByName(columns, 'special');
         expect(column.getDefaultValue()).to.shallow.equal('CURRENT_TIMESTAMP');
-      })
-    })
+      });
+    });
 
     lab.after(() => db.dropTable('event'));
+  });
 
-  })
-
-  lab.experiment('autoIncrement',() => {
+  lab.experiment('autoIncrement', () => {
     let columns;
 
-
     lab.before(async () => {
-
       await db.createTable(
         'event',
         {
@@ -210,25 +203,23 @@ lab.experiment('pg', () => {
             primaryKey: true,
             autoIncrement: true
           }
-        },
-      )
+        }
+      );
 
-      columns = await meta.getColumnsAsync('event')
+      columns = await meta.getColumnsAsync('event');
     });
 
     lab.test('has column metadata with auto increment column', async () => {
       const column = findByName(columns, 'id');
       expect(column.getDataType()).to.shallow.equal('BIGINT');
-      expect(column.getDefaultValue()).to.shallow.equal("nextval('event_id_seq'::regclass)")
+      expect(column.getDefaultValue()).to.shallow.equal("nextval('event_id_seq'::regclass)");
       expect(column.isPrimaryKey()).to.shallow.equal(true);
       expect(column.isNullable()).to.shallow.equal(false);
       expect(column.isAutoIncrementing()).to.shallow.equal(true);
-    })
-
+    });
 
     lab.after(() => db.dropTable('event'));
-  })
-
+  });
 
   lab.experiment('dropTable', () => {
     let tables;
@@ -247,8 +238,8 @@ lab.experiment('pg', () => {
     lab.test('has table metadata containing no tables', async () => {
       expect(tables).to.exist();
       expect(tables.length).to.shallow.equal(0);
-    })
-  })
+    });
+  });
 
   lab.experiment('renameTable', () => {
     let tables;
@@ -295,8 +286,6 @@ lab.experiment('pg', () => {
       columns = await meta.getColumnsAsync('event');
     });
 
-
-
     lab.after(() => db.dropTable('event'));
 
     lab.test('with additional title column', () => {
@@ -305,7 +294,6 @@ lab.experiment('pg', () => {
       const column = findByName(columns, 'title');
       expect(column.getName()).to.shallow.equal('title');
       expect(column.getDataType()).to.shallow.equal('CHARACTER VARYING');
-
 
       // Testing the "after" constraint
       // mysql > 8 does not return the same way anymore,
@@ -395,9 +383,9 @@ lab.experiment('pg', () => {
           }
         });
 
-      var spec = { notNull: false, defaultValue: 'foo2', unique: false };
-      var spec2 = { notNull: true, unsigned: true };
-      var spec3 = {
+      const spec = { notNull: false, defaultValue: 'foo2', unique: false };
+      const spec2 = { notNull: true, unsigned: true };
+      const spec3 = {
         type: dataType.INTEGER,
         using: util.format(
           'USING CAST(CAST("type_test" AS %s) AS %s)',
@@ -405,30 +393,27 @@ lab.experiment('pg', () => {
           dataType.INTEGER
         )
       };
-      var spec4 = { type: dataType.STRING, length: 100 };
+      const spec4 = { type: dataType.STRING, length: 100 };
 
       await db.changeColumn(
         'event',
         'txt',
         spec);
-      await          db.changeColumn(
+      await db.changeColumn(
         'event',
         'keep_id',
-        spec2)
+        spec2);
       await db.changeColumn(
         'event',
         'type_test',
-        spec3)
+        spec3);
       await db.changeColumn(
         'event',
         'type_length_test',
-        spec4)
-
-
+        spec4);
 
       columns = await meta.getColumnsAsync('event');
     });
-
 
     lab.after(() => db.dropTable('event'));
 
@@ -455,44 +440,6 @@ lab.experiment('pg', () => {
       expect(column.getName()).to.shallow.equal('type_length_test');
       expect(column.getDataType()).to.shallow.equal('CHARACTER VARYING');
       expect(column.meta.character_maximum_length).to.shallow.equal(100);
-    });
-  });
-
-  lab.experiment('addIndex', () => {
-    let tables;
-    let indexes;
-
-    lab.before(async () => {
-      await db.createTable('event', {
-        id: {
-          type: dataType.INTEGER,
-          primaryKey: true,
-          autoIncrement: true
-        },
-        title: { type: dataType.STRING }
-      });
-
-      await db.addIndex('event', 'event_title', 'title');
-      tables = await meta.getTablesAsync();
-      indexes = await meta.getIndexesAsync('event');
-    });
-
-    lab.after(() => db.dropTable('event'));
-
-    lab.test('preserves case of the functions original table', () => {
-      expect(tables).to.exist();
-      expect(tables.length).to.equal(1);
-      expect(tables[0].getName()).to.equal('event');
-    });
-
-    lab.test('has table with additional indexes', () => {
-      expect(indexes).to.exist();
-      expect(indexes.length).to.equal(2);
-
-      const index = findByName(indexes, 'event_title');
-      expect(index.getName()).to.equal('event_title');
-      expect(index.getTableName()).to.equal('event');
-      expect(index.getColumnName()).to.equal('title');
     });
   });
 
@@ -552,9 +499,9 @@ lab.experiment('pg', () => {
         '  AND kcu.column_name = ?'
       ].join('\n');
 
-      ({rows} = await db.runSql(
+      ({ rows } = await db.runSql(
         metaQuery,
-        ['public', 'event', 'event_id'],
+        ['public', 'event', 'event_id']
       ));
     });
 
@@ -562,9 +509,6 @@ lab.experiment('pg', () => {
       await db.dropTable('event');
       await db.dropTable('event_type');
     });
-
-
-
 
     lab.experiment('sets usage and constraints', () => {
       lab.test('with correct references', () => {
@@ -581,7 +525,6 @@ lab.experiment('pg', () => {
         const row = rows[0];
         expect(row.update_rule).to.shallow.equal('NO ACTION');
         expect(row.delete_rule).to.shallow.equal('CASCADE');
-
       });
     });
   });
@@ -633,7 +576,7 @@ lab.experiment('pg', () => {
         }
       });
 
-      var metaQuery = [
+      const metaQuery = [
         'SELECT',
         ' tc.table_schema, tc.table_name as ortn, kcu.column_name orcn, ccu.table_name,',
         '  ccu.column_name,',
@@ -654,22 +597,16 @@ lab.experiment('pg', () => {
         '  AND (kcu.column_name = ? OR kcu.column_name = ?)'
       ].join('\n');
 
-      ({rows} = await db.runSql(
+      ({ rows } = await db.runSql(
         metaQuery,
         ['public', 'event', 'event_id', 'event_id2']
       ));
     });
 
-
-
-
     lab.after(async () => {
       await db.dropTable('event');
       await db.dropTable('event_type');
     });
-
-
-
 
     lab.experiment('sets usage and constraints', () => {
       lab.test('with correct references', () => {
@@ -678,7 +615,6 @@ lab.experiment('pg', () => {
         let row = rows[0];
         expect(row.table_name).to.shallow.equal('event_type');
         expect(row.column_name).to.shallow.equal('id');
-
 
         row = rows[1];
         expect(row.table_name).to.shallow.equal('event_type');
@@ -705,7 +641,7 @@ lab.experiment('pg', () => {
     });
   });
 
-lab.experiment('addForeignKey', () => {
+  lab.experiment('addForeignKey', () => {
     let rows;
 
     lab.before(async () => {
@@ -743,58 +679,54 @@ lab.experiment('addForeignKey', () => {
         }
       );
 
-      var metaQuery = [
-             'SELECT',
-             ' tc.table_schema, tc.table_name as ortn, kcu.column_name orcn, ccu.table_name,',
-             '  ccu.column_name,',
-             '  cstr.update_rule,',
-             '  cstr.delete_rule',
-             'FROM',
-             '  information_schema.table_constraints AS tc',
-             'JOIN information_schema.key_column_usage AS kcu',
-             '  ON tc.constraint_name = kcu.constraint_name',
-             'JOIN information_schema.constraint_column_usage AS ccu',
-             '  ON ccu.constraint_name = tc.constraint_name',
-             'JOIN information_schema.referential_constraints AS cstr',
-             '  ON cstr.constraint_schema = tc.table_schema',
-             '    AND cstr.constraint_name = tc.constraint_name',
-             'WHERE',
-             '  tc.table_schema = ?',
-             '  AND tc.table_name = ?',
-             '  AND kcu.column_name = ?'
-           ].join('\n');
-       ({rows} = await db.runSql(metaQuery, ['public', 'event', 'event_id']));
+      const metaQuery = [
+        'SELECT',
+        ' tc.table_schema, tc.table_name as ortn, kcu.column_name orcn, ccu.table_name,',
+        '  ccu.column_name,',
+        '  cstr.update_rule,',
+        '  cstr.delete_rule',
+        'FROM',
+        '  information_schema.table_constraints AS tc',
+        'JOIN information_schema.key_column_usage AS kcu',
+        '  ON tc.constraint_name = kcu.constraint_name',
+        'JOIN information_schema.constraint_column_usage AS ccu',
+        '  ON ccu.constraint_name = tc.constraint_name',
+        'JOIN information_schema.referential_constraints AS cstr',
+        '  ON cstr.constraint_schema = tc.table_schema',
+        '    AND cstr.constraint_name = tc.constraint_name',
+        'WHERE',
+        '  tc.table_schema = ?',
+        '  AND tc.table_name = ?',
+        '  AND kcu.column_name = ?'
+      ].join('\n');
+      ({ rows } = await db.runSql(metaQuery, ['public', 'event', 'event_id']));
     });
-
-   
-
 
     lab.after(async () => {
       await db.dropTable('event');
       await db.dropTable('event_type');
     });
 
-
     lab.experiment('sets usage and constraints', () => {
       lab.test('with correct references', () => {
         expect(rows).to.exist();
         expect(rows.length).to.equal(1);
         const row = rows[0];
-         expect(row.table_name).to.shallow.equal('event_type');
-           expect(row.column_name).to.shallow.equal('id');
+        expect(row.table_name).to.shallow.equal('event_type');
+        expect(row.column_name).to.shallow.equal('id');
       });
 
       lab.test('and correct rules', () => {
         expect(rows).to.exist();
         expect(rows.length).to.equal(1);
         const row = rows[0];
-           expect(row.update_rule).to.shallow.equal('NO ACTION');
-           expect(row.delete_rule).to.shallow.equal('CASCADE');
+        expect(row.update_rule).to.shallow.equal('NO ACTION');
+        expect(row.delete_rule).to.shallow.equal('CASCADE');
       });
     });
   });
 
-lab.experiment('removeForeignKey', () => {
+  lab.experiment('removeForeignKey', () => {
     let rows;
 
     lab.before(async () => {
@@ -833,29 +765,28 @@ lab.experiment('removeForeignKey', () => {
       );
       await db.removeForeignKey('event', 'fk_event_event_type');
 
-      var metaQuery = [
-             'SELECT',
-             ' tc.table_schema, tc.table_name as ortn, kcu.column_name orcn, ccu.table_name,',
-             '  ccu.column_name,',
-             '  cstr.update_rule,',
-             '  cstr.delete_rule',
-             'FROM',
-             '  information_schema.table_constraints AS tc',
-             'JOIN information_schema.key_column_usage AS kcu',
-             '  ON tc.constraint_name = kcu.constraint_name',
-             'JOIN information_schema.constraint_column_usage AS ccu',
-             '  ON ccu.constraint_name = tc.constraint_name',
-             'JOIN information_schema.referential_constraints AS cstr',
-             '  ON cstr.constraint_schema = tc.table_schema',
-             '    AND cstr.constraint_name = tc.constraint_name',
-             'WHERE',
-             '  tc.table_schema = ?',
-             '  AND tc.table_name = ?',
-             '  AND kcu.column_name = ?'
-           ].join('\n');
-      ({rows} = await db.runSql(metaQuery, ['public', 'event', 'event_id']));
+      const metaQuery = [
+        'SELECT',
+        ' tc.table_schema, tc.table_name as ortn, kcu.column_name orcn, ccu.table_name,',
+        '  ccu.column_name,',
+        '  cstr.update_rule,',
+        '  cstr.delete_rule',
+        'FROM',
+        '  information_schema.table_constraints AS tc',
+        'JOIN information_schema.key_column_usage AS kcu',
+        '  ON tc.constraint_name = kcu.constraint_name',
+        'JOIN information_schema.constraint_column_usage AS ccu',
+        '  ON ccu.constraint_name = tc.constraint_name',
+        'JOIN information_schema.referential_constraints AS cstr',
+        '  ON cstr.constraint_schema = tc.table_schema',
+        '    AND cstr.constraint_name = tc.constraint_name',
+        'WHERE',
+        '  tc.table_schema = ?',
+        '  AND tc.table_name = ?',
+        '  AND kcu.column_name = ?'
+      ].join('\n');
+      ({ rows } = await db.runSql(metaQuery, ['public', 'event', 'event_id']));
     });
-  
 
     lab.after(async () => {
       await db.dropTable('event');
@@ -870,226 +801,148 @@ lab.experiment('removeForeignKey', () => {
     });
   });
 
-  lab.after(() => db.close())
-})
+  lab.experiment('insert', () => {
+    lab.before(async () => {
+      await db.createTable('event', {
+        id: {
+          type: dataType.INTEGER,
+          primaryKey: true,
+          autoIncrement: true
+        },
+        title: { type: dataType.STRING }
+      });
 
+      await db.insert('event', ['id', 'title'], [2, 'title']);
+    });
 
+    lab.after(() => db.dropTable('event'));
 
-//   .addBatch({
-//     insert: {
-//       topic: function () {
-//         db.createTable('event', {
-//           id: {
-//             type: dataType.INTEGER,
-//             primaryKey: true,
-//             autoIncrement: true
-//           },
-//           title: { type: dataType.STRING }
-//         })
-//           .then(function () {
-//             return db.insert('event', ['id', 'title'], [2, 'title']);
-//           })
-//           .then(function () {
-//             return db.runSql('SELECT * from event');
-//           })
-//           .nodeify(this.callback);
-//       },
-// 
-//       'with additional row': function (err, data) {
-//         expect(err).to.not.exist();
-//         expect(data.rowCount).to.shallow.equal(1);
-//       },
-// 
-//       teardown: function () {
-//         db.dropTable('event', this.callback);
-//       }
-//     }
-//   })
-//   .addBatch({
-//     insertWithSingleQuotes: {
-//       topic: function () {
-//         db.createTable('event', {
-//           id: {
-//             type: dataType.INTEGER,
-//             primaryKey: true,
-//             autoIncrement: true
-//           },
-//           title: { type: dataType.STRING }
-//         })
-//           .then(function () {
-//             return db.insert(
-//               'event',
-//               ['id', 'title'],
-//               [2, "Bill's Mother's House"]
-//             );
-//           })
-//           .then(function () {
-//             return db.runSql('SELECT * from event');
-//           })
-//           .nodeify(this.callback);
-//       },
-// 
-//       'with additional row': function (err, data) {
-//         expect(err).to.not.exist();
-//         expect(data.rowCount).to.shallow.equal(1);
-//       },
-// 
-//       teardown: function () {
-//         db.dropTable('event', this.callback);
-//       }
-//     }
-//   })
-//   .addBatch({
-//     removeIndex: {
-//       topic: function () {
-//         db.createTable(
-//           'event',
-//           {
-//             id: {
-//               type: dataType.INTEGER,
-//               primaryKey: true,
-//               autoIncrement: true
-//             },
-//             title: {
-//               type: dataType.STRING
-//             }
-//           },
-//           function () {
-//             db.addIndex(
-//               'event',
-//               'event_title',
-//               'title',
-//               function (err) {
-//                 expect(err).to.not.exist();
-//                 db.removeIndex('event_title', this.callback.bind(this, null));
-//               }.bind(this)
-//             );
-//           }.bind(this)
-//         );
-//       },
-// 
-//       'has resulting index metadata': {
-//         topic: function () {
-//           dbmeta(
-//             'pg',
-//             { connection: db.connection },
-//             function (err, meta) {
-//               if (err) {
-//                 return this.callback(err);
-//               }
-//               meta.getIndexes('event', this.callback);
-//             }.bind(this)
-//           );
-//         },
-// 
-//         'without index': function (err, indexes) {
-//           expect(err).to.not.exist();
-//           expect(indexes).to.exist();
-//           expect(indexes.length).to.shallow.equal(1); // first index is primary key
-//         }
-//       },
-// 
-//       teardown: function () {
-//         db.dropTable('event', this.callback);
-//       }
-//     }
-//   })
-//   .addBatch({
-//     createMigrationsTable: {
-//       topic: function () {
-//         db.createMigrationsTable(this.callback.bind(this, null));
-//       },
-// 
-//       'has migrations table': {
-//         topic: function () {
-//           dbmeta(
-//             'pg',
-//             { connection: db.connection },
-//             function (err, meta) {
-//               if (err) {
-//                 return this.callback(err);
-//               }
-//               meta.getTables(this.callback);
-//             }.bind(this)
-//           );
-//         },
-// 
-//         'has migrations table': function (err, tables) {
-//           expect(err).to.not.exist();
-//           expect(tables).to.exist();
-//           expect(tables.length).to.shallow.equal(1);
-//           expect(tables[0].getName()).to.shallow.equal('migrations');
-//         },
-// 
-//         'that has columns': {
-//           topic: function () {
-//             dbmeta(
-//               'pg',
-//               { connection: db.connection },
-//               function (err, meta) {
-//                 if (err) {
-//                   return this.callback(err);
-//                 }
-//                 meta.getColumns('migrations', this.callback);
-//               }.bind(this)
-//             );
-//           },
-// 
-//           'with names': function (err, columns) {
-//             expect(err).to.not.exist();
-//             expect(columns).to.exist();
-//             expect(columns.length).to.shallow.equal(3);
-//             const column = findByName(columns, 'id');
-//             expect(column.getName()).to.shallow.equal('id');
-//             expect(column.getDataType()).to.shallow.equal('INTEGER');
-//             column = findByName(columns, 'name');
-//             expect(column.getName()).to.shallow.equal('name');
-//             expect(column.getDataType()).to.shallow.equal('CHARACTER VARYING');
-//             column = findByName(columns, 'run_on');
-//             expect(column.getName()).to.shallow.equal('run_on');
-//             expect(
-//               column.getDataType()).to.shallow.equal(
-//               'TIMESTAMP WITHOUT TIME ZONE'
-//             );
-//           }
-//         }
-//       },
-// 
-//       teardown: function () {
-//         db.dropTable('migrations', this.callback);
-//       }
-//     }
-//   })
-//   .addBatch({
-//     switchDatabase: {
-//       topic: function () {
-//         db.switchDatabase({ schema: 'test_schema2' }, this.callback);
-//       },
-// 
-//       'has search path': {
-//         topic: function () {
-//           db.runSql('SHOW search_path', this.callback);
-//         },
-// 
-//         'containing the new schema': function (err, result) {
-//           expect(err).to.not.exist();
-//           var rows = result.rows;
-//           expect(rows).to.exist();
-//           expect(rows.length).to.shallow.equal(1);
-//           var row = rows[0];
-//           expect(row.search_path).to.shallow.equal('test_schema2');
-//         }
-//       },
-// 
-//       teardown: function () {
-//         db.switchDatabase({ schema: config.schema }, this.callback);
-//       }
-//     }
-//   })
+    lab.test('with additional row', async () => {
+      const { rows } = await db.runSql('SELECT * from event');
+      expect(rows.length).to.equal(1);
+    });
+  });
+
+  lab.experiment('insertWithSingleQuotes', () => {
+    lab.before(async () => {
+      await db.createTable('event', {
+        id: {
+          type: dataType.INTEGER,
+          primaryKey: true,
+          autoIncrement: true
+        },
+        title: { type: dataType.STRING }
+      });
+
+      await db.insert('event', ['id', 'title'], [2, "Bill's Mother's House"]);
+    });
+
+    lab.after(() => db.dropTable('event'));
+
+    lab.test('with additional row', async () => {
+      const { rows } = await db.runSql('SELECT * from event');
+      expect(rows.length).to.equal(1);
+    });
+  });
+
+  lab.experiment('addIndex', () => {
+    let tables;
+    let indexes;
+
+    lab.before(async () => {
+      await db.createTable('event', {
+        id: {
+          type: dataType.INTEGER,
+          primaryKey: true,
+          autoIncrement: true
+        },
+        title: { type: dataType.STRING }
+      });
+
+      await db.addIndex('event', 'event_title', 'title');
+      tables = await meta.getTablesAsync();
+      indexes = await meta.getIndexesAsync('event');
+    });
+
+    lab.after(() => db.dropTable('event'));
+
+    lab.test('preserves case of the functions original table', () => {
+      expect(tables).to.exist();
+      expect(tables.length).to.equal(1);
+      expect(tables[0].getName()).to.equal('event');
+    });
+
+    lab.test('has table with additional indexes', () => {
+      expect(indexes).to.exist();
+      expect(indexes.length).to.equal(2);
+
+      const index = findByName(indexes, 'event_title');
+      expect(index.getName()).to.equal('event_title');
+      expect(index.getTableName()).to.equal('event');
+      expect(index.getColumnName()).to.equal('title');
+    });
+  });
+
+  lab.experiment('createMigrationsTable', () => {
+    let tables;
+    let columns;
+
+    lab.before(async () => {
+      await Promise.promisify(db.createMigrationsTable.bind(db))();
+
+      columns = await meta.getColumnsAsync('migrations');
+      tables = await meta.getTablesAsync();
+    });
+
+    lab.after(() => db.dropTable('migrations'));
+
+    lab.test('has migrations table', () => {
+      expect(tables).to.exist();
+      expect(tables.length).to.equal(1);
+      expect(tables[0].getName()).to.equal('migrations');
+    });
+
+    lab.test('with names', () => {
+      expect(columns).to.exist();
+      expect(columns.length).to.equal(3);
+      let column = findByName(columns, 'id');
+      expect(column.getName()).to.equal('id');
+      expect(column.getDataType()).to.equal('INTEGER');
+      column = findByName(columns, 'name');
+      expect(column.getName()).to.equal('name');
+      expect(column.getDataType()).to.equal('CHARACTER VARYING');
+      column = findByName(columns, 'run_on');
+      expect(column.getName()).to.equal('run_on');
+      expect(column.getDataType()).to.equal('TIMESTAMP WITHOUT TIME ZONE');
+    });
+  });
+
+  lab.experiment('switchDatabase', () => {
+    let rows;
+
+    lab.before(async () => {
+      await db.switchDatabase({ schema: 'test_schema2' });
+
+      ({ rows } = await db.runSql('SHOW search_path'));
+    });
+
+    lab.test('has search path containing the new schema', async () => {
+      expect(rows).to.exist();
+      expect(rows.length).to.shallow.equal(1);
+      const row = rows[0];
+      expect(row.search_path).to.shallow.equal('test_schema2');
+    });
+
+    lab.after(() => db.switchDatabase({ schema: config.schema }));
+  });
+
+  lab.after(() => db.close());
+});
+
 //   .export(module);
 
 function findByName (columns, name) {
-  for (var i = 0; i < columns.length; i++) {
+  for (let i = 0; i < columns.length; i++) {
     if (columns[i].getName() === name) {
       return columns[i];
     }
