@@ -39,9 +39,9 @@ lab
       db = con;
     });
     lab.experiment('create schema', () => {
-lab.before(async () => {
-      await client.query('CREATE SCHEMA "test_schema"');
-    });
+      lab.before(async () => {
+        await client.query('CREATE SCHEMA "test_schema"');
+      });
 
       // lab.test('which needs escaping and connect', async () => {
       //   const result = await client.query(
@@ -51,15 +51,12 @@ lab.before(async () => {
       //   Code.expect(result.rowCount).to.equal(1);
       // });
 
-
-
       lab.after(async () => {
-await client.query('DROP SCHEMA "test_schema" CASCADE')
-      })
+        await client.query('DROP SCHEMA "test_schema" CASCADE');
+      });
     });
     lab.after(() => {
-      client.end()
-      db.close()
-    })
+      client.end();
+      db.close();
+    });
   });
-
