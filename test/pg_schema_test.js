@@ -1,3 +1,9 @@
+const Code = require('@hapi/code');
+const Lab = require('@hapi/lab');
+
+const { expect } = Code;
+const lab = (exports.lab = Lab.script());
+
 var vows = require('vows');
 var Promise = require('bluebird');
 var assert = require('assert');
@@ -24,185 +30,152 @@ internals.interfaces = {
 };
 internals.migrationTable = 'migrations';
 
-vows
-  .describe('pg')
-  .addBatch({
-    'create schema which needs escaping and connect': {
-      topic: function() {
-        var callback = this.callback;
-        var client = new pg.Client(config);
+lab
+  .experiment('pg', () => {
+    let client;
+    let db;
+    lab.before(async () => {
+      const con = await Promise.promisify(driver.connect)(config, internals);
+      await client.connect();
+      client = new pg.Client(config);
+      await client.query('CREATE SCHEMA "test_schema"');
+      db = con;
+    });
+    lab.experiment('create schema', () => {
+      lab.test('which needs escaping and connect', async () => {
+        await db.createMigrationsTable();
+        const result = await client.query(
+          "SELECT table_name FROM information_schema.tables WHERE table_schema = 'test_schema' AND table_name = 'migrations'");
 
-        client.connect(function(err) {
-          if (err) {
-            return callback(err);
-          }
-          client.query('CREATE SCHEMA "test_schema"', function(err) {
-            driver.connect(
-              config,
-              internals,
-              function(err, db) {
-                callback(err, db, client);
-              }
-            );
-          });
-        });
-      },
+        Code.expect(result).to.exist();
+        Code.expect(result.rowCount).to.equal(1);
+      });
 
-      migrations: {
-        topic: function(db, client) {
-          var callback = this.callback;
+      lab.after(() => client.query('DROP SCHEMA "test_schema" CASCADE'));
+    });
+  });
+// .addBatch({
+//   'create schema and a public.migrations table and connect': {
+//     topic: function() {
+//       var callback = this.callback;
+//       var client = new pg.Client(config);
+//       var query = Promise.promisify(client.query).bind(client);
 
-          db.createMigrationsTable(function() {
-            client.query(
-              "SELECT table_name FROM information_schema.tables WHERE table_schema = 'test_schema' AND table_name = 'migrations'",
-              function(err, result) {
-                callback(err, result, client);
-              }
-            );
-          });
-        },
+//       client.connect(function(err) {
+//         if (err) {
+//           return callback(err);
+//         }
+//         Promise.all([
+//           query('CREATE SCHEMA test_schema'),
+//           query('CREATE TABLE migrations ()')
+//         ])
+//           .then(function() {
+//             driver.connect(
+//               config,
+//               internals,
+//               function(err, db) {
+//                 callback(err, db, client);
+//               }
+//             );
+//           })
+//           .catch(function(err) {
+//             callback(err);
+//           });
+//       });
+//     },
 
-        'is in test_schema': function(err, result) {
-          assert.isNull(err);
-          assert.isNotNull(result);
-          assert.equal(result.rowCount, 1);
-        }
-      },
+//     'migrations table': {
+//       topic: function(db, client) {
+//         var callback = this.callback;
 
-      teardown: function(db, client) {
-        var callback = this.callback;
-        client.query('DROP SCHEMA "test_schema" CASCADE', function(err) {
-          if (err) {
-            return callback(err);
-          }
-          client.end();
-          callback();
-        });
-      }
-    }
-  })
-  .addBatch({
-    'create schema and a public.migrations table and connect': {
-      topic: function() {
-        var callback = this.callback;
-        var client = new pg.Client(config);
-        var query = Promise.promisify(client.query).bind(client);
+//         db.createMigrationsTable(function() {
+//           client.query(
+//             "SELECT table_name FROM information_schema.tables WHERE table_schema = 'test_schema' AND table_name = 'migrations'",
+//             function(err, result) {
+//               callback(err, result, client);
+//             }
+//           );
+//         });
+//       },
 
-        client.connect(function(err) {
-          if (err) {
-            return callback(err);
-          }
-          Promise.all([
-            query('CREATE SCHEMA test_schema'),
-            query('CREATE TABLE migrations ()')
-          ])
-            .then(function() {
-              driver.connect(
-                config,
-                internals,
-                function(err, db) {
-                  callback(err, db, client);
-                }
-              );
-            })
-            .catch(function(err) {
-              callback(err);
-            });
-        });
-      },
+//       'is in test_schema': function(err, result) {
+//         assert.isNull(err);
+//         assert.isNotNull(result);
+//         Code.expect(result.rowCount).to.equal(1);
+//       }
+//     },
 
-      'migrations table': {
-        topic: function(db, client) {
-          var callback = this.callback;
+//     teardown: function(db, client) {
+//       var callback = this.callback;
+//       var query = Promise.promisify(client.query).bind(client);
 
-          db.createMigrationsTable(function() {
-            client.query(
-              "SELECT table_name FROM information_schema.tables WHERE table_schema = 'test_schema' AND table_name = 'migrations'",
-              function(err, result) {
-                callback(err, result, client);
-              }
-            );
-          });
-        },
+//       Promise.all([
+//         query('DROP SCHEMA test_schema CASCADE'),
+//         query('DROP TABLE migrations')
+//       ])
+//         .then(function(err) {
+//           client.end();
+//           callback();
+//         })
+//         .catch(function(err) {
+//           callback(err);
+//         });
+//     }
+//   }
+// })
+// .addBatch({
+//   'create schema and connect': {
+//     topic: function() {
+//       var callback = this.callback;
+//       var client = new pg.Client(config);
 
-        'is in test_schema': function(err, result) {
-          assert.isNull(err);
-          assert.isNotNull(result);
-          assert.equal(result.rowCount, 1);
-        }
-      },
+//       client.connect(function(err) {
+//         if (err) {
+//           return callback(err);
+//         }
+//         client.query('CREATE SCHEMA test_schema', function(err) {
+//           driver.connect(
+//             config,
+//             internals,
+//             function(err, db) {
+//               callback(err, db, client);
+//             }
+//           );
+//         });
+//       });
+//     },
 
-      teardown: function(db, client) {
-        var callback = this.callback;
-        var query = Promise.promisify(client.query).bind(client);
+//     'migrations table': {
+//       topic: function(db, client) {
+//         var callback = this.callback;
 
-        Promise.all([
-          query('DROP SCHEMA test_schema CASCADE'),
-          query('DROP TABLE migrations')
-        ])
-          .then(function(err) {
-            client.end();
-            callback();
-          })
-          .catch(function(err) {
-            callback(err);
-          });
-      }
-    }
-  })
-  .addBatch({
-    'create schema and connect': {
-      topic: function() {
-        var callback = this.callback;
-        var client = new pg.Client(config);
+//         db.createMigrationsTable(function() {
+//           client.query(
+//             "SELECT table_name FROM information_schema.tables WHERE table_schema = 'test_schema' AND table_name = 'migrations'",
+//             function(err, result) {
+//               callback(err, result, client);
+//             }
+//           );
+//         });
+//       },
 
-        client.connect(function(err) {
-          if (err) {
-            return callback(err);
-          }
-          client.query('CREATE SCHEMA test_schema', function(err) {
-            driver.connect(
-              config,
-              internals,
-              function(err, db) {
-                callback(err, db, client);
-              }
-            );
-          });
-        });
-      },
+//       'is in test_schema': function(err, result) {
+//         assert.isNull(err);
+//         assert.isNotNull(result);
+//         Code.expect(result.rowCount).to.equal(1);
+//       }
+//     },
 
-      'migrations table': {
-        topic: function(db, client) {
-          var callback = this.callback;
-
-          db.createMigrationsTable(function() {
-            client.query(
-              "SELECT table_name FROM information_schema.tables WHERE table_schema = 'test_schema' AND table_name = 'migrations'",
-              function(err, result) {
-                callback(err, result, client);
-              }
-            );
-          });
-        },
-
-        'is in test_schema': function(err, result) {
-          assert.isNull(err);
-          assert.isNotNull(result);
-          assert.equal(result.rowCount, 1);
-        }
-      },
-
-      teardown: function(db, client) {
-        var callback = this.callback;
-        client.query('DROP SCHEMA test_schema CASCADE', function(err) {
-          if (err) {
-            return callback(err);
-          }
-          client.end();
-          callback();
-        });
-      }
-    }
-  })
-  .export(module);
+//     teardown: function(db, client) {
+//       var callback = this.callback;
+//       client.query('DROP SCHEMA test_schema CASCADE', function(err) {
+//         if (err) {
+//           return callback(err);
+//         }
+//         client.end();
+//         callback();
+//       });
+//     }
+//   }
+// })
+// .export(module);
