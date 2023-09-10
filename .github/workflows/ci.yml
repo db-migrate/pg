@@ -21,6 +21,7 @@ jobs:
         with:
           postgresql version: '15'
           postgresql db: 'db_migrate_test'
+          postgresql password: 'test123'
       - uses: actions/checkout@v3
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
