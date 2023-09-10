@@ -92,6 +92,8 @@ var PgDriver = Base.extend({
     if (typeof options === 'function') {
       callback = options;
       options = {};
+    } else if (!options) {
+      options = {};
     }
 
     if (options.ifNotExists) {
@@ -126,7 +128,7 @@ var PgDriver = Base.extend({
     var ifExists = '';
 
     if (typeof options === 'function') callback = options;
-    else {
+    else if (options) {
       ifExists = options.ifExists === true ? 'IF EXISTS' : '';
     }
 
