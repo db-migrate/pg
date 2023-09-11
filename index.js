@@ -96,32 +96,10 @@ var PgDriver = Base.extend({
       options = {};
     }
 
-    if (options.ifNotExists) {
-      this.runSql(
-        `
-        DO
-        $do$
-        DECLARE
-          _db TEXT := '${dbName}';
-        BEGIN
-          CREATE EXTENSION IF NOT EXISTS dblink;
-          IF EXISTS (SELECT 1 FROM pg_database WHERE datname = _db) THEN
-            RAISE NOTICE 'Database "%" already exists, skipping creation.', _db;
-          ELSE
-            PERFORM dblink_connect('dbname=' || current_database());
-            PERFORM dblink_exec('CREATE DATABASE ' || _db || ' ${spec}');
-          END IF;
-        END
-        $do$
-        `,
-        callback
-      );
-    } else {
-      this.runSql(
-        util.format('CREATE DATABASE %s %s', this.escapeDDL(dbName), spec),
-        callback
-      );
-    }
+    this.runSql(
+      util.format('CREATE DATABASE %s %s', this.escapeDDL(dbName), spec),
+      callback
+    );
   },
 
   dropDatabase: function (dbName, options, callback) {
@@ -253,8 +231,9 @@ var PgDriver = Base.extend({
           var searchPathes = result[0].search_path.split(',');
 
           for (var i = 0; i < searchPathes.length; ++i) {
+            searchPathes[i] = searchPathes[i].trim();
             if (searchPathes[i].indexOf('"') !== 0) {
-              searchPathes[i] = '"' + searchPathes[i].trim() + '"';
+              searchPathes[i] = '"' + searchPathes[i] + '"';
             }
           }
 
