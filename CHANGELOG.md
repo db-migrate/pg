@@ -1,3 +1,18 @@
+## [1.5.1](https://github.com/db-migrate/pg/compare/v1.5.0...v1.5.1) (2023-09-11)
+
+
+### Bug Fixes
+
+* **createMigrationsTable:** Fix bug where already-quoted search path components could get double-quoted when creating the mirations table. ([79436f3](https://github.com/db-migrate/pg/commit/79436f3d261206c5b26c2fa56a69305d8eabbe12))
+* **searchPath:** escaping of search ([13e956b](https://github.com/db-migrate/pg/commit/13e956bf619b1ec283aa26e32377d2d48c96e074)), closes [#46](https://github.com/db-migrate/pg/issues/46)
+
+
+### Features
+
+* support ifNotExists when creating a postgres db ([b554d2b](https://github.com/db-migrate/pg/commit/b554d2bb6718fdde29c7a7bd7a642a98251e6d77))
+
+
+
 # [1.5.0](https://github.com/db-migrate/pg/compare/v1.4.2...v1.5.0) (2023-09-10)
 
 
