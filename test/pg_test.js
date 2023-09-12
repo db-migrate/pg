@@ -38,6 +38,7 @@ lab.experiment('pg', () => {
     meta = _meta;
 
     db = con;
+    Promise.promisifyAll(db);
   });
 
   lab.experiment('connections', () => {
@@ -965,6 +966,25 @@ lab.experiment('pg', () => {
     lab.after(async () => {
       await db.dropTable('migrations');
       await db.switchDatabase({ schema: config.schema });
+    });
+  });
+
+  lab.experiment('_getKV', () => {
+    let rows;
+
+    lab.before(async () => {
+      await db._createKV('test');
+    });
+
+    lab.test('can read written keys', async () => {
+      await db._insertKV('test', 'test', 'test123');
+      const e = await db._getKV('test', 'test');
+      expect(e).to.exist();
+      expect(e.value).to.equal('test123');
+    });
+
+    lab.after(async () => {
+      await db.dropTable('test');
     });
   });
 

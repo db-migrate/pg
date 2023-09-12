@@ -664,7 +664,7 @@ var PgDriver = Base.extend({
     var sql =
       `SELECT ${this.escapeDDL('key')},
         ${this.escapeDDL('value')},
-        ${this.escapeDDL('run_on')}::STRING
+        ${this.escapeDDL('run_on')}::${this.mapDataType(this.type.STRING)}
         FROM ` +
       this._escapeDDL +
       table +
