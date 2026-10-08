@@ -1,3 +1,21 @@
+# [1.6.0](https://github.com/db-migrate/pg/compare/v1.5.2...v1.6.0) (2026-10-08)
+
+
+### Features
+
+* declare support for the migration lock ([402f7a4](https://github.com/db-migrate/pg/commit/402f7a4dff865f0b3b4186b634f767465114ecac))
+
+
+### Upgrade notes
+
+* Requires db-migrate-base 2.4.0, migration and seed records are now written with
+  `run_on` set by the database clock instead of the clock of the migrating process.
+  If that process ran in a different time zone than the database session, records
+  written shortly after the upgrade can sort before the last records written before
+  it. This window is as long as the time zone offset.
+
+
+
 ## [1.5.2](https://github.com/db-migrate/pg/compare/v1.5.1...v1.5.2) (2023-09-12)
 
 
