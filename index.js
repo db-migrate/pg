@@ -752,7 +752,9 @@ var PgDriver = Base.extend({
       optionParam: true,
       // support for column strategies for example on dropping not
       // null columns
-      columnStrategies: true
+      columnStrategies: true,
+      // state methods are safe for the migration lock
+      locking: true
     }
   }
 });
