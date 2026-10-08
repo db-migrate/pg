@@ -253,12 +253,16 @@ var PgDriver = Base.extend({
       )
       .then(
         function () {
-          return this.all(
-            "SELECT table_name FROM information_schema.tables WHERE table_name = '" +
-              this.internals.migrationTable +
-              "'" +
-              (this.schema ? " AND table_schema = '" + this.schema + "'" : '')
-          );
+          var params = [this.internals.migrationTable];
+          var sql =
+            'SELECT table_name FROM information_schema.tables WHERE table_name = $1';
+
+          if (this.schema) {
+            sql += ' AND table_schema = $2';
+            params.push(this.schema);
+          }
+
+          return this.all(sql, params);
         }.bind(this)
       )
       .then(
