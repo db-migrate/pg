@@ -32,7 +32,7 @@
   "homepage": "https://github.com/db-migrate/pg",
   "dependencies": {
     "bluebird": "^3.1.1",
-    "db-migrate-base": "^2.4.0",
+    "db-migrate-base": "^2.4.1",
     "pg": "^8.11.2",
     "semver": "^7.5.4"
   },
