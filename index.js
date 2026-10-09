@@ -609,20 +609,6 @@ var PgDriver = Base.extend({
     return this.runSql(sql).nodeify(callback);
   },
 
-  insert: function () {
-    var index = 1;
-
-    if (arguments.length > 3) {
-      index = 2;
-    }
-
-    arguments[index] = arguments[index].map(function (value) {
-      return typeof value === 'string' ? value : JSON.stringify(value);
-    });
-
-    return this._super.apply(this, arguments);
-  },
-
   runSql: function () {
     var callback;
     var minLength = 1;

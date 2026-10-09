@@ -846,6 +846,36 @@ lab.experiment('pg', () => {
     });
   });
 
+  lab.experiment('insert forms', () => {
+    lab.before(async () => {
+      await db.createTable('event', {
+        id: { type: dataType.INTEGER, primaryKey: true },
+        title: { type: dataType.STRING, defaultValue: `say "hi", it's` },
+        meta: { type: dataType.TEXT }
+      });
+
+      await db.insert('event', ['id', 'title'], [[1, 'a'], [2, 'b']]);
+      await db.insert('event', { id: 3, meta: { a: [1] } });
+      await db.insert('event', [{ id: 4 }, { id: 5, title: 'e' }]);
+      await db.insert('event', { columns: ['id', 'title'], data: [6, 'f'] });
+    });
+
+    lab.after(() => db.dropTable('event'));
+
+    lab.test('inserts every row, with defaults and JSON', async () => {
+      const rows = await db.all('SELECT * FROM event ORDER BY id');
+      expect(rows.map(r => [r.id, r.title])).to.equal([
+        [1, 'a'],
+        [2, 'b'],
+        [3, `say "hi", it's`],
+        [4, `say "hi", it's`],
+        [5, 'e'],
+        [6, 'f']
+      ]);
+      expect(JSON.parse(rows[2].meta)).to.equal({ a: [1] });
+    });
+  });
+
   lab.experiment('addIndex', () => {
     let tables;
     let indexes;
