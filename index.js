@@ -223,37 +223,11 @@ var PgDriver = Base.extend({
       ifNotExists: false
     };
 
-    return this.all('show server_version_num')
+    return this._supportsIfNotExists()
       .then(
-        function (result) {
-          if (result && result.length > 0 && result[0].server_version_num) {
-            var version = result[0].server_version_num;
-            var major = Math.floor(version / 10000);
-            var minor = Math.floor((version - major * 10000) / 100);
-            var patch = Math.floor(version - major * 10000 - minor * 100);
-            version = major + '.' + minor + '.' + patch;
-            options.ifNotExists = semver.gte(version, '9.1.0');
-          }
+        function (supported) {
+          options.ifNotExists = supported;
         }
-      )
-      .catch(
-        // not all DBs support server_version_num, fall back to server_version
-        function () {
-          return this.all('show server_version').then(
-            function (result) {
-              if (result && result.length > 0 && result[0].server_version) {
-                var version = result[0].server_version;
-                // handle versions like “10.2 (Ubuntu 10.2)”
-                version = version.split(' ')[0];
-                // handle missing patch numbers
-                if (version.split('.').length !== 3) {
-                  version += '.0';
-                }
-                options.ifNotExists = semver.gte(version, '9.1.0');
-              }
-            }
-          );
-        }.bind(this)
       )
       .then(
         function () {
@@ -282,6 +256,44 @@ var PgDriver = Base.extend({
       .nodeify(callback);
   },
 
+  /**
+   * Whether the server supports CREATE TABLE IF NOT EXISTS, 9.1 and newer.
+   */
+  _supportsIfNotExists: function () {
+    var supported = false;
+
+    return this.all('show server_version_num')
+      .then(function (result) {
+        if (result && result.length > 0 && result[0].server_version_num) {
+          var version = result[0].server_version_num;
+          var major = Math.floor(version / 10000);
+          var minor = Math.floor((version - major * 10000) / 100);
+          var patch = Math.floor(version - major * 10000 - minor * 100);
+          version = major + '.' + minor + '.' + patch;
+          supported = semver.gte(version, '9.1.0');
+        }
+      })
+      .catch(
+        // not all DBs support server_version_num, fall back to server_version
+        function () {
+          return this.all('show server_version').then(function (result) {
+            if (result && result.length > 0 && result[0].server_version) {
+              // handle versions like “10.2 (Ubuntu 10.2)”
+              var version = result[0].server_version.split(' ')[0];
+              // handle missing patch numbers
+              if (version.split('.').length !== 3) {
+                version += '.0';
+              }
+              supported = !!semver.valid(version) && semver.gte(version, '9.1.0');
+            }
+          });
+        }.bind(this)
+      )
+      .then(function () {
+        return supported;
+      });
+  },
+
   createSeedsTable: function (callback) {
     var options = {
       columns: {
@@ -297,36 +309,11 @@ var PgDriver = Base.extend({
       ifNotExists: false
     };
 
-    return this.all('select version() as version')
+    return this._supportsIfNotExists()
       .then(
-        function (result) {
-          if (result && result.length > 0 && result[0].version) {
-            var version = result[0].version;
-            var match = version.match(/\d+\.\d+\.\d+/);
-            if (match && match[0] && semver.gte(match[0], '9.1.0')) {
-              options.ifNotExists = true;
-            }
-          }
-
-          // Get the current search path so we can change the current schema
-          // if necessary
-          return this.all('SHOW search_path');
-        }.bind(this)
-      )
-      .then(
-        function (result) {
-          var searchPath;
-
-          // if the user specified a different schema, prepend it to the
-          // search path. This will make all DDL/DML/SQL operate on the specified
-          // schema.
-          if (this.schema === 'public') {
-            searchPath = result[0].search_path;
-          } else {
-            searchPath = '"' + this.schema + '",' + result[0].search_path;
-          }
-
-          return this.all('SET search_path TO ' + searchPath);
+        function (supported) {
+          options.ifNotExists = supported;
+          return this._useSchema();
         }.bind(this)
       )
       .then(

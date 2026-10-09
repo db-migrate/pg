@@ -861,6 +861,24 @@ lab.experiment('pg', () => {
     });
   });
 
+  lab.experiment('server version', () => {
+    lab.test('of servers without server_version_num, like Ubuntu builds', async () => {
+      const all = db.all;
+      db.all = sql =>
+        sql === 'show server_version_num'
+          ? Promise.reject(new Error('unrecognized configuration parameter'))
+          : Promise.resolve([{ server_version: '10.4 (Ubuntu 10.4-0ubuntu0.18.04)' }]);
+
+      try {
+        expect(await db._supportsIfNotExists()).to.be.true();
+        db.all = () => Promise.reject(new Error('nope')).catch(() => [{ server_version: 'weird' }]);
+        expect(await db._supportsIfNotExists()).to.be.false();
+      } finally {
+        db.all = all;
+      }
+    });
+  });
+
   lab.experiment('insert forms', () => {
     lab.before(async () => {
       await db.createTable('event', {
