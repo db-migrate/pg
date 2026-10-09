@@ -1,3 +1,17 @@
+# [1.7.0](https://github.com/db-migrate/pg/compare/v1.6.1...v1.7.0) (2026-10-09)
+
+
+### Bug Fixes
+
+* escape string defaults and column comments ([77340e4](https://github.com/db-migrate/pg/commit/77340e4682882aec8c799c696ebf5109440e2d0b))
+
+
+### Features
+
+* insert through db-migrate-base, objects and several rows ([d17b210](https://github.com/db-migrate/pg/commit/d17b210c9d3228a89a32d9f68482e0bb826c7b21)), closes [#38](https://github.com/db-migrate/pg/issues/38)
+
+
+
 ## [1.6.1](https://github.com/db-migrate/pg/compare/v1.6.0...v1.6.1) (2026-10-09)
 
 
