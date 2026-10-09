@@ -379,7 +379,7 @@ var PgDriver = Base.extend({
     if (spec.defaultValue !== undefined) {
       constraint.push('DEFAULT');
       if (typeof spec.defaultValue === 'string') {
-        constraint.push("'" + spec.defaultValue + "'");
+        constraint.push(this.escapeString(spec.defaultValue));
       } else if (typeof spec.defaultValue.prep === 'string') {
         constraint.push(spec.defaultValue.prep);
       } else {
@@ -396,10 +396,10 @@ var PgDriver = Base.extend({
       callbacks.push(
         function (tableName, columnName, comment, callback) {
           var sql = util.format(
-            "COMMENT on COLUMN %s.%s IS '%s'",
+            'COMMENT on COLUMN %s.%s IS %s',
             tableName,
             columnName,
-            comment
+            this.escapeString(comment)
           );
           return this.runSql(sql).nodeify(callback);
         }.bind(this, tableName, columnName, spec.comment)
@@ -519,7 +519,7 @@ var PgDriver = Base.extend({
       if (columnSpec.defaultValue !== undefined) {
         var defaultValue = null;
         if (typeof columnSpec.defaultValue === 'string') {
-          defaultValue = "'" + columnSpec.defaultValue + "'";
+          defaultValue = this.escapeString(columnSpec.defaultValue);
         } else {
           defaultValue = columnSpec.defaultValue;
         }
