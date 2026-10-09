@@ -66,7 +66,7 @@ var PgDriver = Base.extend({
         spec.defaultValue.prep = 'CURRENT_TIMESTAMP';
         break;
       default:
-        this.super(spec, options, tableName, columnName);
+        this._super(spec, options, tableName, columnName);
         break;
     }
   },
@@ -126,7 +126,7 @@ var PgDriver = Base.extend({
     }
 
     this.runSql(
-      util.format('CREATE %s SEQUENCE `%s` %s', temp, sqName, spec),
+      util.format('CREATE %s SEQUENCE %s %s', temp, this.escapeDDL(sqName), spec),
       callback
     );
   },
@@ -166,7 +166,7 @@ var PgDriver = Base.extend({
     }
 
     this.runSql(
-      util.format('DROP SEQUENCE %s `%s` %s', ifExists, dbName, rule),
+      util.format('DROP SEQUENCE %s %s %s', ifExists, this.escapeDDL(dbName), rule),
       callback
     );
   },
