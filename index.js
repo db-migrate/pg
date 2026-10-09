@@ -171,6 +171,41 @@ var PgDriver = Base.extend({
     );
   },
 
+  /**
+   * Puts the configured schema in front of the search path, so everything,
+   * the tables of db-migrate included, uses it. Called on every connection.
+   */
+  _useSchema: function () {
+    if (this.schema === 'public') {
+      return Promise.resolve();
+    }
+
+    return this.all('SHOW search_path').then(
+      function (result) {
+        var schema = '"' + this.schema + '"';
+        var searchPaths = result[0].search_path.split(',').map(function (path) {
+          path = path.trim();
+          return path.indexOf('"') === 0 ? path : '"' + path + '"';
+        });
+
+        if (searchPaths[0] === schema) {
+          return Promise.resolve();
+        }
+
+        return this.all(
+          'SET search_path TO ' +
+            [schema]
+              .concat(
+                searchPaths.filter(function (path) {
+                  return path !== schema;
+                })
+              )
+              .join(',')
+        );
+      }.bind(this)
+    );
+  },
+
   createMigrationsTable: function (callback) {
     var options = {
       columns: {
@@ -197,11 +232,7 @@ var PgDriver = Base.extend({
             version = major + '.' + minor + '.' + patch;
             options.ifNotExists = semver.gte(version, '9.1.0');
           }
-
-          // Get the current search path so we can change the current schema
-          // if necessary
-          return this.all('SHOW search_path');
-        }.bind(this)
+        }
       )
       .catch(
         // not all DBs support server_version_num, fall back to server_version
@@ -217,38 +248,14 @@ var PgDriver = Base.extend({
                   version += '.0';
                 }
                 options.ifNotExists = semver.gte(version, '9.1.0');
-                // Get the current search path so we can change the current
-                // schema if necessary
-                return this.all('SHOW search_path');
               }
-            }.bind(this)
+            }
           );
         }.bind(this)
       )
       .then(
-        function (result) {
-          var searchPath;
-          var searchPathes = result[0].search_path.split(',');
-
-          for (var i = 0; i < searchPathes.length; ++i) {
-            searchPathes[i] = searchPathes[i].trim();
-            if (searchPathes[i].indexOf('"') !== 0) {
-              searchPathes[i] = '"' + searchPathes[i] + '"';
-            }
-          }
-
-          result[0].search_path = searchPathes.join(',');
-
-          // if the user specified a different schema, prepend it to the
-          // search path. This will make all DDL/DML/SQL operate on the specified
-          // schema.
-          if (this.schema === 'public') {
-            searchPath = result[0].search_path;
-          } else {
-            searchPath = '"' + this.schema + '",' + result[0].search_path;
-          }
-
-          return this.all('SET search_path TO ' + searchPath);
+        function () {
+          return this._useSchema();
         }.bind(this)
       )
       .then(
@@ -776,9 +783,13 @@ exports.connect = function (config, intern, callback) {
   var db = config.db || new pg.Client(config);
   db.connect(function (err) {
     if (err) {
-      callback(err);
+      return callback(err);
     }
-    callback(null, new PgDriver(db, config.schema, intern));
+
+    var driver = new PgDriver(db, config.schema, intern);
+    driver._useSchema().then(function () {
+      callback(null, driver);
+    }, callback);
   });
 };
 
