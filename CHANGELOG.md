@@ -1,3 +1,13 @@
+## [1.7.1](https://github.com/db-migrate/pg/compare/v1.7.0...v1.7.1) (2026-10-10)
+
+
+### Bug Fixes
+
+* a serial primary key with a length ([3f55a15](https://github.com/db-migrate/pg/commit/3f55a15fe735ab96145d868437baef3066613dad)), closes [#1](https://github.com/db-migrate/pg/issues/1)
+* detect the server version of Ubuntu builds for the seeds table ([d2ca8d4](https://github.com/db-migrate/pg/commit/d2ca8d482deedee05b845e79fa7a476dce48b43b)), closes [#52](https://github.com/db-migrate/pg/issues/52)
+
+
+
 # [1.7.0](https://github.com/db-migrate/pg/compare/v1.6.1...v1.7.0) (2026-10-09)
 
 
