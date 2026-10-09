@@ -846,6 +846,21 @@ lab.experiment('pg', () => {
     });
   });
 
+  lab.experiment('serial primary key with a length', () => {
+    lab.after(() => db.dropTable('event'));
+
+    lab.test('takes no length', async () => {
+      await db.createTable('event', {
+        id: { type: dataType.INTEGER, length: 11, primaryKey: true, autoIncrement: true }
+      });
+      await db.insert('event', { columns: [], data: [] });
+      const [row] = await db.all(
+        "SELECT data_type FROM information_schema.columns WHERE table_name = 'event' AND column_name = 'id'"
+      );
+      expect(row.data_type).to.equal('integer');
+    });
+  });
+
   lab.experiment('insert forms', () => {
     lab.before(async () => {
       await db.createTable('event', {

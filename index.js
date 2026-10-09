@@ -35,9 +35,11 @@ var PgDriver = Base.extend({
       spec.timezone = true;
       return type;
     });
-    var type =
-      spec.primaryKey && spec.autoIncrement ? '' : this.mapDataType(spec.type);
-    var len = spec.length ? util.format('(%s)', spec.length) : '';
+    // a serial primary key gets its type from the constraint, SERIAL or
+    // BIGSERIAL, which takes no length
+    var serial = spec.primaryKey && spec.autoIncrement;
+    var type = serial ? '' : this.mapDataType(spec.type);
+    var len = spec.length && !serial ? util.format('(%s)', spec.length) : '';
     var constraint = this.createColumnConstraint(
       spec,
       options,
