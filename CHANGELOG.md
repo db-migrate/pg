@@ -1,3 +1,13 @@
+## [1.6.1](https://github.com/db-migrate/pg/compare/v1.6.0...v1.6.1) (2026-10-09)
+
+
+### Bug Fixes
+
+* use the configured schema on every connection ([5611086](https://github.com/db-migrate/pg/commit/56110860d6f5d2211672d5b487bff9ac8a2209e7))
+* unsupported special defaults and sequence names ([9788e9f](https://github.com/db-migrate/pg/commit/9788e9fad5e67713bc54dc9cd3f726974b13a800))
+
+
+
 # [1.6.0](https://github.com/db-migrate/pg/compare/v1.5.2...v1.6.0) (2026-10-08)
 
 
